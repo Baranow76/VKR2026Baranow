@@ -1,0 +1,3951 @@
+[
+  {
+    "id": "c7e473f0-5726-4f03-a6de-9ba41cd64dde",
+    "module": "full_project",
+    "created_at": "2026-05-17T14:43:56",
+    "input_data": {
+      "name": "Демо-проект инновационной модернизации",
+      "production": {
+        "time_fund": 520.0,
+        "takt": 1.8,
+        "items": [
+          {
+            "name": "Корпус редуктора",
+            "quantity": 85,
+            "setup_time": 18.0,
+            "group": "A",
+            "comment": null
+          },
+          {
+            "name": "Вал приводной",
+            "quantity": 120,
+            "setup_time": 12.0,
+            "group": "A",
+            "comment": null
+          },
+          {
+            "name": "Кронштейн",
+            "quantity": 160,
+            "setup_time": 8.0,
+            "group": "B",
+            "comment": null
+          },
+          {
+            "name": "Фланец",
+            "quantity": 95,
+            "setup_time": 22.0,
+            "group": "B",
+            "comment": null
+          },
+          {
+            "name": "Втулка",
+            "quantity": 140,
+            "setup_time": 10.0,
+            "group": "C",
+            "comment": null
+          },
+          {
+            "name": "Переходник",
+            "quantity": 60,
+            "setup_time": 30.0,
+            "group": "C",
+            "comment": null
+          }
+        ]
+      },
+      "robotics": {
+        "max_machines_per_robot": 3,
+        "max_deviation": 0.22,
+        "operations": [
+          {
+            "name": "Операция 1",
+            "top": 24.0,
+            "kz": 0.8,
+            "service_time": 5.0,
+            "machine": "Токарный станок",
+            "comment": null
+          },
+          {
+            "name": "Операция 2",
+            "top": 32.0,
+            "kz": 0.75,
+            "service_time": 6.0,
+            "machine": "Фрезерный центр",
+            "comment": null
+          },
+          {
+            "name": "Операция 3",
+            "top": 18.0,
+            "kz": 0.6,
+            "service_time": 4.0,
+            "machine": "Сверлильный станок",
+            "comment": null
+          },
+          {
+            "name": "Операция 4",
+            "top": 40.0,
+            "kz": 0.85,
+            "service_time": 7.0,
+            "machine": "Обрабатывающий центр",
+            "comment": null
+          },
+          {
+            "name": "Операция 5",
+            "top": 20.0,
+            "kz": 0.7,
+            "service_time": 5.0,
+            "machine": "Шлифовальный станок",
+            "comment": null
+          }
+        ]
+      },
+      "risks": {
+        "events": [
+          "Срыв поставки",
+          "Рост стоимости оборудования",
+          "Простой участка",
+          "Недостижение плановой загрузки"
+        ],
+        "base_loss": 1800000.0,
+        "profitability_threshold": 4200000.0,
+        "strategies": [
+          {
+            "name": "S1: страхование",
+            "cost": 520000.0,
+            "risks": [
+              9.0,
+              7.0,
+              6.0,
+              8.0
+            ]
+          },
+          {
+            "name": "S2: резервирование",
+            "cost": 740000.0,
+            "risks": [
+              6.0,
+              5.0,
+              4.0,
+              6.0
+            ]
+          },
+          {
+            "name": "S3: усиленный контроль",
+            "cost": 630000.0,
+            "risks": [
+              5.0,
+              8.0,
+              3.0,
+              5.0
+            ]
+          },
+          {
+            "name": "S4: комбинированная стратегия",
+            "cost": 880000.0,
+            "risks": [
+              4.0,
+              4.0,
+              3.0,
+              4.0
+            ]
+          }
+        ],
+        "hurwicz_coefficients": [
+          0.3,
+          0.5,
+          0.7,
+          0.8,
+          0.9
+        ]
+      },
+      "economics": {
+        "initial_investment": 12000000.0,
+        "discount_rate": 18.0,
+        "periods": [
+          {
+            "year": 1,
+            "inflow": 4200000.0,
+            "operating_costs": 900000.0,
+            "risk_losses": 240000.0,
+            "maintenance_costs": 180000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 2,
+            "inflow": 5600000.0,
+            "operating_costs": 1000000.0,
+            "risk_losses": 210000.0,
+            "maintenance_costs": 220000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 3,
+            "inflow": 6900000.0,
+            "operating_costs": 1150000.0,
+            "risk_losses": 180000.0,
+            "maintenance_costs": 260000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 4,
+            "inflow": 7600000.0,
+            "operating_costs": 1250000.0,
+            "risk_losses": 160000.0,
+            "maintenance_costs": 300000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 5,
+            "inflow": 8100000.0,
+            "operating_costs": 1350000.0,
+            "risk_losses": 150000.0,
+            "maintenance_costs": 330000.0,
+            "additional_investment": 0.0
+          }
+        ]
+      }
+    },
+    "output_data": {
+      "project_name": "Демо-проект инновационной модернизации",
+      "created_at": "2026-05-17T14:43:56",
+      "modules": {
+        "production": {
+          "module": "production_program",
+          "input_summary": {
+            "time_fund": 520.0,
+            "takt": 1.8,
+            "items_count": 6
+          },
+          "sequence": [
+            {
+              "order": 1,
+              "name": "Кронштейн",
+              "quantity": 160,
+              "setup_time": 8.0,
+              "production_time": 288.0,
+              "total_time": 296.0,
+              "group": "B",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "included"
+            },
+            {
+              "order": 4,
+              "name": "Корпус редуктора",
+              "quantity": 85,
+              "setup_time": 18.0,
+              "production_time": 153.0,
+              "total_time": 171.0,
+              "group": "A",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "included"
+            }
+          ],
+          "excluded_items": [
+            {
+              "order": 2,
+              "name": "Втулка",
+              "quantity": 140,
+              "setup_time": 10.0,
+              "production_time": 252.0,
+              "total_time": 262.0,
+              "group": "C",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 3,
+              "name": "Вал приводной",
+              "quantity": 120,
+              "setup_time": 12.0,
+              "production_time": 216.0,
+              "total_time": 228.0,
+              "group": "A",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 5,
+              "name": "Фланец",
+              "quantity": 95,
+              "setup_time": 22.0,
+              "production_time": 171.0,
+              "total_time": 193.0,
+              "group": "B",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 6,
+              "name": "Переходник",
+              "quantity": 60,
+              "setup_time": 30.0,
+              "production_time": 108.0,
+              "total_time": 138.0,
+              "group": "C",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            }
+          ],
+          "used_time": 467.0,
+          "remaining_time": 53.0,
+          "utilization_percent": 89.81,
+          "interpretation": "Сформирована квазиоптимальная производственная программа из 2 позиций. Использовано 467.00 из 520.00 единиц фонда времени, коэффициент использования фонда составляет 89.81%. 4 позиций не включено из-за ограничения фонда времени."
+        },
+        "robotics": {
+          "module": "robotic_links",
+          "links": [
+            {
+              "link_number": 1,
+              "d": 28.57,
+              "robot_load_factor": 0.49,
+              "robot_load_percent": 49.0,
+              "machines_count": 3,
+              "operations": [
+                {
+                  "name": "Операция 5",
+                  "machine": "Шлифовальный станок",
+                  "top": 20.0,
+                  "kz": 0.7,
+                  "service_time": 5.0,
+                  "tau": 28.57,
+                  "A": 1,
+                  "k_fact": 0.7,
+                  "delta": 0.0,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 3",
+                  "machine": "Сверлильный станок",
+                  "top": 18.0,
+                  "kz": 0.6,
+                  "service_time": 4.0,
+                  "tau": 30.0,
+                  "A": 1,
+                  "k_fact": 0.63,
+                  "delta": 0.03,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 1",
+                  "machine": "Токарный станок",
+                  "top": 24.0,
+                  "kz": 0.8,
+                  "service_time": 5.0,
+                  "tau": 30.0,
+                  "A": 1,
+                  "k_fact": 0.84,
+                  "delta": 0.04,
+                  "reason": null
+                }
+              ],
+              "assessment": "Недогрузка робота"
+            },
+            {
+              "link_number": 2,
+              "d": 42.67,
+              "robot_load_factor": 0.3,
+              "robot_load_percent": 30.47,
+              "machines_count": 2,
+              "operations": [
+                {
+                  "name": "Операция 2",
+                  "machine": "Фрезерный центр",
+                  "top": 32.0,
+                  "kz": 0.75,
+                  "service_time": 6.0,
+                  "tau": 42.67,
+                  "A": 1,
+                  "k_fact": 0.75,
+                  "delta": 0.0,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 4",
+                  "machine": "Обрабатывающий центр",
+                  "top": 40.0,
+                  "kz": 0.85,
+                  "service_time": 7.0,
+                  "tau": 47.06,
+                  "A": 1,
+                  "k_fact": 0.9375,
+                  "delta": 0.0875,
+                  "reason": null
+                }
+              ],
+              "assessment": "Недогрузка робота"
+            }
+          ],
+          "unassigned_operations": [],
+          "links_count": 2,
+          "average_robot_load_percent": 39.5,
+          "interpretation": "Сформировано 2 роботизированных звеньев. Средняя загрузка роботов составляет 39.73%."
+        },
+        "risks": {
+          "module": "risk_analysis",
+          "events": [
+            "Срыв поставки",
+            "Рост стоимости оборудования",
+            "Простой участка",
+            "Недостижение плановой загрузки"
+          ],
+          "loss_table": [
+            {
+              "strategy": "S1: страхование",
+              "losses": [
+                162000.0,
+                126000.0,
+                108000.0,
+                144000.0
+              ],
+              "total_loss": 540000.0,
+              "strategy_cost": 520000.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "losses": [
+                108000.0,
+                90000.0,
+                72000.0,
+                108000.0
+              ],
+              "total_loss": 378000.0,
+              "strategy_cost": 740000.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "losses": [
+                90000.0,
+                144000.0,
+                54000.0,
+                90000.0
+              ],
+              "total_loss": 378000.0,
+              "strategy_cost": 630000.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "losses": [
+                72000.0,
+                72000.0,
+                54000.0,
+                72000.0
+              ],
+              "total_loss": 270000.0,
+              "strategy_cost": 880000.0
+            }
+          ],
+          "payoff_table": [
+            {
+              "strategy": "S1: страхование",
+              "Dij": [
+                3908000.0,
+                3944000.0,
+                3962000.0,
+                3926000.0
+              ],
+              "Dminij": 3908000.0,
+              "Dmaxij": 3962000.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "Dij": [
+                3907000.0,
+                3925000.0,
+                3943000.0,
+                3907000.0
+              ],
+              "Dminij": 3907000.0,
+              "Dmaxij": 3943000.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "Dij": [
+                3952500.0,
+                3898500.0,
+                3988500.0,
+                3952500.0
+              ],
+              "Dminij": 3898500.0,
+              "Dmaxij": 3988500.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "Dij": [
+                3908000.0,
+                3908000.0,
+                3926000.0,
+                3908000.0
+              ],
+              "Dminij": 3908000.0,
+              "Dmaxij": 3926000.0
+            }
+          ],
+          "best_payoff_by_event": [
+            3952500.0,
+            3944000.0,
+            3988500.0,
+            3952500.0
+          ],
+          "regret_table": [
+            {
+              "strategy": "S1: страхование",
+              "ERij": [
+                44500.0,
+                0.0,
+                26500.0,
+                26500.0
+              ],
+              "ERmaxij": 44500.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "ERij": [
+                45500.0,
+                19000.0,
+                45500.0,
+                45500.0
+              ],
+              "ERmaxij": 45500.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "ERij": [
+                0.0,
+                45500.0,
+                0.0,
+                0.0
+              ],
+              "ERmaxij": 45500.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "ERij": [
+                44500.0,
+                36000.0,
+                62500.0,
+                44500.0
+              ],
+              "ERmaxij": 62500.0
+            }
+          ],
+          "criteria": {
+            "savage_minimax_regret": [
+              "S1: страхование"
+            ],
+            "wald_maximin_pessimism": [
+              "S1: страхование",
+              "S4: комбинированная стратегия"
+            ],
+            "maximax_optimism": [
+              "S3: усиленный контроль"
+            ],
+            "hurwicz": [
+              {
+                "coefficient": 0.3,
+                "best_value": 3961500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.5,
+                "best_value": 3943500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.7,
+                "best_value": 3925500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.8,
+                "best_value": 3918800.0,
+                "strategies": [
+                  "S1: страхование"
+                ]
+              },
+              {
+                "coefficient": 0.9,
+                "best_value": 3913400.0,
+                "strategies": [
+                  "S1: страхование"
+                ]
+              }
+            ],
+            "recommended_strategy": "S1: страхование"
+          },
+          "hurwicz_table": [
+            {
+              "strategy": "S1: страхование",
+              "GHj": [
+                3945800.0,
+                3935000.0,
+                3924200.0,
+                3918800.0,
+                3913400.0
+              ]
+            },
+            {
+              "strategy": "S2: резервирование",
+              "GHj": [
+                3932200.0,
+                3925000.0,
+                3917800.0,
+                3914200.0,
+                3910600.0
+              ]
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "GHj": [
+                3961500.0,
+                3943500.0,
+                3925500.0,
+                3916500.0,
+                3907500.0
+              ]
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "GHj": [
+                3920600.0,
+                3917000.0,
+                3913400.0,
+                3911600.0,
+                3909800.0
+              ]
+            }
+          ],
+          "interpretation": "По критерию Сэвиджа рекомендуется: S1: страхование. По критерию Вальда, то есть по пессимистическому maximin-подходу, рекомендуется: S1: страхование, S4: комбинированная стратегия. Сводная рекомендация системы: стратегия «S1: страхование»."
+        },
+        "economics": {
+          "module": "economics",
+          "initial_investment": 12000000.0,
+          "discount_rate_percent": 18.0,
+          "npv": 2446008.23,
+          "irr_percent": 25.56,
+          "roi_percent": 104.33,
+          "profitability_index": 1.2038,
+          "simple_payback_period_years": 2.93,
+          "discounted_payback_period_years": 4.11,
+          "is_effective": true,
+          "flows": [
+            {
+              "year": 1,
+              "inflow": 4200000.0,
+              "operating_costs": 900000.0,
+              "risk_losses": 240000.0,
+              "maintenance_costs": 180000.0,
+              "additional_investment": 0.0,
+              "net_flow": 2880000.0,
+              "discounted_flow": 2440677.97,
+              "cumulative_simple_flow": -9120000.0,
+              "cumulative_discounted_flow": -9559322.03
+            },
+            {
+              "year": 2,
+              "inflow": 5600000.0,
+              "operating_costs": 1000000.0,
+              "risk_losses": 210000.0,
+              "maintenance_costs": 220000.0,
+              "additional_investment": 0.0,
+              "net_flow": 4170000.0,
+              "discounted_flow": 2994829.07,
+              "cumulative_simple_flow": -4950000.0,
+              "cumulative_discounted_flow": -6564492.96
+            },
+            {
+              "year": 3,
+              "inflow": 6900000.0,
+              "operating_costs": 1150000.0,
+              "risk_losses": 180000.0,
+              "maintenance_costs": 260000.0,
+              "additional_investment": 0.0,
+              "net_flow": 5310000.0,
+              "discounted_flow": 3231829.93,
+              "cumulative_simple_flow": 360000.0,
+              "cumulative_discounted_flow": -3332663.03
+            },
+            {
+              "year": 4,
+              "inflow": 7600000.0,
+              "operating_costs": 1250000.0,
+              "risk_losses": 160000.0,
+              "maintenance_costs": 300000.0,
+              "additional_investment": 0.0,
+              "net_flow": 5890000.0,
+              "discounted_flow": 3037996.47,
+              "cumulative_simple_flow": 6250000.0,
+              "cumulative_discounted_flow": -294666.55
+            },
+            {
+              "year": 5,
+              "inflow": 8100000.0,
+              "operating_costs": 1350000.0,
+              "risk_losses": 150000.0,
+              "maintenance_costs": 330000.0,
+              "additional_investment": 0.0,
+              "net_flow": 6270000.0,
+              "discounted_flow": 2740674.79,
+              "cumulative_simple_flow": 12520000.0,
+              "cumulative_discounted_flow": 2446008.23
+            }
+          ],
+          "sensitivity": {
+            "discount_rate_minus_5pp": 4510042.7,
+            "discount_rate_base": 2446008.23,
+            "discount_rate_plus_5pp": 751705.74,
+            "investment_minus_10_percent": 3646008.23,
+            "investment_plus_10_percent": 1246008.23,
+            "inflow_minus_10_percent": 521879.44,
+            "inflow_plus_10_percent": 4370137.03
+          },
+          "interpretation": "NPV проекта составляет 2446008.23. Следовательно, проект экономически эффективен, так как ЧДД/NPV положителен. Индекс доходности равен 1.2038, ROI составляет 104.33%."
+        }
+      },
+      "summary": {
+        "npv": 2446008.23,
+        "irr_percent": 25.56,
+        "payback": 4.11,
+        "is_effective": true,
+        "recommended_risk_strategy": "S1: страхование",
+        "production_utilization_percent": 89.81,
+        "average_robot_load_percent": 39.5
+      }
+    }
+  },
+  {
+    "id": "89054173-12b2-4e79-bb3a-d0e9ae30935a",
+    "module": "risks",
+    "created_at": "2026-05-17T14:43:51",
+    "input_data": {
+      "events": [
+        "Срыв поставки",
+        "Рост стоимости оборудования",
+        "Простой участка",
+        "Недостижение плановой загрузки"
+      ],
+      "base_loss": 1800000.0,
+      "profitability_threshold": 4200000.0,
+      "strategies": [
+        {
+          "name": "S1: страхование",
+          "cost": 520000.0,
+          "risks": [
+            9.0,
+            7.0,
+            6.0,
+            8.0
+          ]
+        },
+        {
+          "name": "S2: резервирование",
+          "cost": 740000.0,
+          "risks": [
+            6.0,
+            5.0,
+            4.0,
+            6.0
+          ]
+        },
+        {
+          "name": "S3: усиленный контроль",
+          "cost": 630000.0,
+          "risks": [
+            5.0,
+            8.0,
+            3.0,
+            5.0
+          ]
+        },
+        {
+          "name": "S4: комбинированная стратегия",
+          "cost": 880000.0,
+          "risks": [
+            4.0,
+            4.0,
+            3.0,
+            4.0
+          ]
+        }
+      ],
+      "hurwicz_coefficients": [
+        0.3,
+        0.5,
+        0.7,
+        0.8,
+        0.9
+      ]
+    },
+    "output_data": {
+      "module": "risk_analysis",
+      "events": [
+        "Срыв поставки",
+        "Рост стоимости оборудования",
+        "Простой участка",
+        "Недостижение плановой загрузки"
+      ],
+      "loss_table": [
+        {
+          "strategy": "S1: страхование",
+          "losses": [
+            162000.0,
+            126000.0,
+            108000.0,
+            144000.0
+          ],
+          "total_loss": 540000.0,
+          "strategy_cost": 520000.0
+        },
+        {
+          "strategy": "S2: резервирование",
+          "losses": [
+            108000.0,
+            90000.0,
+            72000.0,
+            108000.0
+          ],
+          "total_loss": 378000.0,
+          "strategy_cost": 740000.0
+        },
+        {
+          "strategy": "S3: усиленный контроль",
+          "losses": [
+            90000.0,
+            144000.0,
+            54000.0,
+            90000.0
+          ],
+          "total_loss": 378000.0,
+          "strategy_cost": 630000.0
+        },
+        {
+          "strategy": "S4: комбинированная стратегия",
+          "losses": [
+            72000.0,
+            72000.0,
+            54000.0,
+            72000.0
+          ],
+          "total_loss": 270000.0,
+          "strategy_cost": 880000.0
+        }
+      ],
+      "payoff_table": [
+        {
+          "strategy": "S1: страхование",
+          "Dij": [
+            3908000.0,
+            3944000.0,
+            3962000.0,
+            3926000.0
+          ],
+          "Dminij": 3908000.0,
+          "Dmaxij": 3962000.0
+        },
+        {
+          "strategy": "S2: резервирование",
+          "Dij": [
+            3907000.0,
+            3925000.0,
+            3943000.0,
+            3907000.0
+          ],
+          "Dminij": 3907000.0,
+          "Dmaxij": 3943000.0
+        },
+        {
+          "strategy": "S3: усиленный контроль",
+          "Dij": [
+            3952500.0,
+            3898500.0,
+            3988500.0,
+            3952500.0
+          ],
+          "Dminij": 3898500.0,
+          "Dmaxij": 3988500.0
+        },
+        {
+          "strategy": "S4: комбинированная стратегия",
+          "Dij": [
+            3908000.0,
+            3908000.0,
+            3926000.0,
+            3908000.0
+          ],
+          "Dminij": 3908000.0,
+          "Dmaxij": 3926000.0
+        }
+      ],
+      "best_payoff_by_event": [
+        3952500.0,
+        3944000.0,
+        3988500.0,
+        3952500.0
+      ],
+      "regret_table": [
+        {
+          "strategy": "S1: страхование",
+          "ERij": [
+            44500.0,
+            0.0,
+            26500.0,
+            26500.0
+          ],
+          "ERmaxij": 44500.0
+        },
+        {
+          "strategy": "S2: резервирование",
+          "ERij": [
+            45500.0,
+            19000.0,
+            45500.0,
+            45500.0
+          ],
+          "ERmaxij": 45500.0
+        },
+        {
+          "strategy": "S3: усиленный контроль",
+          "ERij": [
+            0.0,
+            45500.0,
+            0.0,
+            0.0
+          ],
+          "ERmaxij": 45500.0
+        },
+        {
+          "strategy": "S4: комбинированная стратегия",
+          "ERij": [
+            44500.0,
+            36000.0,
+            62500.0,
+            44500.0
+          ],
+          "ERmaxij": 62500.0
+        }
+      ],
+      "criteria": {
+        "savage_minimax_regret": [
+          "S1: страхование"
+        ],
+        "wald_maximin_pessimism": [
+          "S1: страхование",
+          "S4: комбинированная стратегия"
+        ],
+        "maximax_optimism": [
+          "S3: усиленный контроль"
+        ],
+        "hurwicz": [
+          {
+            "coefficient": 0.3,
+            "best_value": 3961500.0,
+            "strategies": [
+              "S3: усиленный контроль"
+            ]
+          },
+          {
+            "coefficient": 0.5,
+            "best_value": 3943500.0,
+            "strategies": [
+              "S3: усиленный контроль"
+            ]
+          },
+          {
+            "coefficient": 0.7,
+            "best_value": 3925500.0,
+            "strategies": [
+              "S3: усиленный контроль"
+            ]
+          },
+          {
+            "coefficient": 0.8,
+            "best_value": 3918800.0,
+            "strategies": [
+              "S1: страхование"
+            ]
+          },
+          {
+            "coefficient": 0.9,
+            "best_value": 3913400.0,
+            "strategies": [
+              "S1: страхование"
+            ]
+          }
+        ],
+        "recommended_strategy": "S1: страхование"
+      },
+      "hurwicz_table": [
+        {
+          "strategy": "S1: страхование",
+          "GHj": [
+            3945800.0,
+            3935000.0,
+            3924200.0,
+            3918800.0,
+            3913400.0
+          ]
+        },
+        {
+          "strategy": "S2: резервирование",
+          "GHj": [
+            3932200.0,
+            3925000.0,
+            3917800.0,
+            3914200.0,
+            3910600.0
+          ]
+        },
+        {
+          "strategy": "S3: усиленный контроль",
+          "GHj": [
+            3961500.0,
+            3943500.0,
+            3925500.0,
+            3916500.0,
+            3907500.0
+          ]
+        },
+        {
+          "strategy": "S4: комбинированная стратегия",
+          "GHj": [
+            3920600.0,
+            3917000.0,
+            3913400.0,
+            3911600.0,
+            3909800.0
+          ]
+        }
+      ],
+      "interpretation": "По критерию Сэвиджа рекомендуется: S1: страхование. По критерию Вальда, то есть по пессимистическому maximin-подходу, рекомендуется: S1: страхование, S4: комбинированная стратегия. Сводная рекомендация системы: стратегия «S1: страхование»."
+    }
+  },
+  {
+    "id": "be58c00a-07ca-414d-9908-45ee87f1d291",
+    "module": "risks",
+    "created_at": "2026-05-17T14:42:14",
+    "input_data": {
+      "events": [
+        "Срыв поставки",
+        "Рост стоимости оборудования",
+        "Простой участка",
+        "Недостижение плановой загрузки"
+      ],
+      "base_loss": 1800000.0,
+      "profitability_threshold": 4200000.0,
+      "strategies": [
+        {
+          "name": "S1: страхование",
+          "cost": 520000.0,
+          "risks": [
+            9.0,
+            7.0,
+            6.0,
+            8.0
+          ]
+        },
+        {
+          "name": "S2: резервирование",
+          "cost": 740000.0,
+          "risks": [
+            6.0,
+            5.0,
+            4.0,
+            6.0
+          ]
+        },
+        {
+          "name": "S3: усиленный контроль",
+          "cost": 630000.0,
+          "risks": [
+            5.0,
+            8.0,
+            3.0,
+            5.0
+          ]
+        },
+        {
+          "name": "S4: комбинированная стратегия",
+          "cost": 880000.0,
+          "risks": [
+            4.0,
+            4.0,
+            3.0,
+            4.0
+          ]
+        }
+      ],
+      "hurwicz_coefficients": [
+        0.3,
+        0.5,
+        0.7,
+        0.8,
+        0.9
+      ]
+    },
+    "output_data": {
+      "module": "risk_analysis",
+      "events": [
+        "Срыв поставки",
+        "Рост стоимости оборудования",
+        "Простой участка",
+        "Недостижение плановой загрузки"
+      ],
+      "loss_table": [
+        {
+          "strategy": "S1: страхование",
+          "losses": [
+            162000.0,
+            126000.0,
+            108000.0,
+            144000.0
+          ],
+          "total_loss": 540000.0,
+          "strategy_cost": 520000.0
+        },
+        {
+          "strategy": "S2: резервирование",
+          "losses": [
+            108000.0,
+            90000.0,
+            72000.0,
+            108000.0
+          ],
+          "total_loss": 378000.0,
+          "strategy_cost": 740000.0
+        },
+        {
+          "strategy": "S3: усиленный контроль",
+          "losses": [
+            90000.0,
+            144000.0,
+            54000.0,
+            90000.0
+          ],
+          "total_loss": 378000.0,
+          "strategy_cost": 630000.0
+        },
+        {
+          "strategy": "S4: комбинированная стратегия",
+          "losses": [
+            72000.0,
+            72000.0,
+            54000.0,
+            72000.0
+          ],
+          "total_loss": 270000.0,
+          "strategy_cost": 880000.0
+        }
+      ],
+      "payoff_table": [
+        {
+          "strategy": "S1: страхование",
+          "Dij": [
+            3908000.0,
+            3944000.0,
+            3962000.0,
+            3926000.0
+          ],
+          "Dminij": 3908000.0,
+          "Dmaxij": 3962000.0
+        },
+        {
+          "strategy": "S2: резервирование",
+          "Dij": [
+            3907000.0,
+            3925000.0,
+            3943000.0,
+            3907000.0
+          ],
+          "Dminij": 3907000.0,
+          "Dmaxij": 3943000.0
+        },
+        {
+          "strategy": "S3: усиленный контроль",
+          "Dij": [
+            3952500.0,
+            3898500.0,
+            3988500.0,
+            3952500.0
+          ],
+          "Dminij": 3898500.0,
+          "Dmaxij": 3988500.0
+        },
+        {
+          "strategy": "S4: комбинированная стратегия",
+          "Dij": [
+            3908000.0,
+            3908000.0,
+            3926000.0,
+            3908000.0
+          ],
+          "Dminij": 3908000.0,
+          "Dmaxij": 3926000.0
+        }
+      ],
+      "best_payoff_by_event": [
+        3952500.0,
+        3944000.0,
+        3988500.0,
+        3952500.0
+      ],
+      "regret_table": [
+        {
+          "strategy": "S1: страхование",
+          "ERij": [
+            44500.0,
+            0.0,
+            26500.0,
+            26500.0
+          ],
+          "ERmaxij": 44500.0
+        },
+        {
+          "strategy": "S2: резервирование",
+          "ERij": [
+            45500.0,
+            19000.0,
+            45500.0,
+            45500.0
+          ],
+          "ERmaxij": 45500.0
+        },
+        {
+          "strategy": "S3: усиленный контроль",
+          "ERij": [
+            0.0,
+            45500.0,
+            0.0,
+            0.0
+          ],
+          "ERmaxij": 45500.0
+        },
+        {
+          "strategy": "S4: комбинированная стратегия",
+          "ERij": [
+            44500.0,
+            36000.0,
+            62500.0,
+            44500.0
+          ],
+          "ERmaxij": 62500.0
+        }
+      ],
+      "criteria": {
+        "savage_minimax_regret": [
+          "S1: страхование"
+        ],
+        "wald_maximin_pessimism": [
+          "S1: страхование",
+          "S4: комбинированная стратегия"
+        ],
+        "maximax_optimism": [
+          "S3: усиленный контроль"
+        ],
+        "hurwicz": [
+          {
+            "coefficient": 0.3,
+            "best_value": 3961500.0,
+            "strategies": [
+              "S3: усиленный контроль"
+            ]
+          },
+          {
+            "coefficient": 0.5,
+            "best_value": 3943500.0,
+            "strategies": [
+              "S3: усиленный контроль"
+            ]
+          },
+          {
+            "coefficient": 0.7,
+            "best_value": 3925500.0,
+            "strategies": [
+              "S3: усиленный контроль"
+            ]
+          },
+          {
+            "coefficient": 0.8,
+            "best_value": 3918800.0,
+            "strategies": [
+              "S1: страхование"
+            ]
+          },
+          {
+            "coefficient": 0.9,
+            "best_value": 3913400.0,
+            "strategies": [
+              "S1: страхование"
+            ]
+          }
+        ],
+        "recommended_strategy": "S1: страхование"
+      },
+      "hurwicz_table": [
+        {
+          "strategy": "S1: страхование",
+          "GHj": [
+            3945800.0,
+            3935000.0,
+            3924200.0,
+            3918800.0,
+            3913400.0
+          ]
+        },
+        {
+          "strategy": "S2: резервирование",
+          "GHj": [
+            3932200.0,
+            3925000.0,
+            3917800.0,
+            3914200.0,
+            3910600.0
+          ]
+        },
+        {
+          "strategy": "S3: усиленный контроль",
+          "GHj": [
+            3961500.0,
+            3943500.0,
+            3925500.0,
+            3916500.0,
+            3907500.0
+          ]
+        },
+        {
+          "strategy": "S4: комбинированная стратегия",
+          "GHj": [
+            3920600.0,
+            3917000.0,
+            3913400.0,
+            3911600.0,
+            3909800.0
+          ]
+        }
+      ],
+      "interpretation": "По критерию Сэвиджа рекомендуется: S1: страхование. По критерию Вальда, то есть по пессимистическому maximin-подходу, рекомендуется: S1: страхование, S4: комбинированная стратегия. Сводная рекомендация системы: стратегия «S1: страхование»."
+    }
+  },
+  {
+    "id": "105a04b6-74b3-4df8-9abe-472f7b6e3836",
+    "module": "full_project",
+    "created_at": "2026-05-17T14:39:52",
+    "input_data": {
+      "name": "Демо-проект инновационной модернизации",
+      "production": {
+        "time_fund": 520.0,
+        "takt": 1.8,
+        "items": [
+          {
+            "name": "Корпус редуктора",
+            "quantity": 85,
+            "setup_time": 18.0,
+            "group": "A",
+            "comment": null
+          },
+          {
+            "name": "Вал приводной",
+            "quantity": 120,
+            "setup_time": 12.0,
+            "group": "A",
+            "comment": null
+          },
+          {
+            "name": "Кронштейн",
+            "quantity": 160,
+            "setup_time": 8.0,
+            "group": "B",
+            "comment": null
+          },
+          {
+            "name": "Фланец",
+            "quantity": 95,
+            "setup_time": 22.0,
+            "group": "B",
+            "comment": null
+          },
+          {
+            "name": "Втулка",
+            "quantity": 140,
+            "setup_time": 10.0,
+            "group": "C",
+            "comment": null
+          },
+          {
+            "name": "Переходник",
+            "quantity": 60,
+            "setup_time": 30.0,
+            "group": "C",
+            "comment": null
+          }
+        ]
+      },
+      "robotics": {
+        "max_machines_per_robot": 3,
+        "max_deviation": 0.22,
+        "operations": [
+          {
+            "name": "Операция 1",
+            "top": 24.0,
+            "kz": 0.8,
+            "service_time": 5.0,
+            "machine": "Токарный станок",
+            "comment": null
+          },
+          {
+            "name": "Операция 2",
+            "top": 32.0,
+            "kz": 0.75,
+            "service_time": 6.0,
+            "machine": "Фрезерный центр",
+            "comment": null
+          },
+          {
+            "name": "Операция 3",
+            "top": 18.0,
+            "kz": 0.6,
+            "service_time": 4.0,
+            "machine": "Сверлильный станок",
+            "comment": null
+          },
+          {
+            "name": "Операция 4",
+            "top": 40.0,
+            "kz": 0.85,
+            "service_time": 7.0,
+            "machine": "Обрабатывающий центр",
+            "comment": null
+          },
+          {
+            "name": "Операция 5",
+            "top": 20.0,
+            "kz": 0.7,
+            "service_time": 5.0,
+            "machine": "Шлифовальный станок",
+            "comment": null
+          }
+        ]
+      },
+      "risks": {
+        "events": [
+          "Срыв поставки",
+          "Рост стоимости оборудования",
+          "Простой участка",
+          "Недостижение плановой загрузки"
+        ],
+        "base_loss": 1800000.0,
+        "profitability_threshold": 4200000.0,
+        "strategies": [
+          {
+            "name": "S1: страхование",
+            "cost": 520000.0,
+            "risks": [
+              9.0,
+              7.0,
+              6.0,
+              8.0
+            ]
+          },
+          {
+            "name": "S2: резервирование",
+            "cost": 740000.0,
+            "risks": [
+              6.0,
+              5.0,
+              4.0,
+              6.0
+            ]
+          },
+          {
+            "name": "S3: усиленный контроль",
+            "cost": 630000.0,
+            "risks": [
+              5.0,
+              8.0,
+              3.0,
+              5.0
+            ]
+          },
+          {
+            "name": "S4: комбинированная стратегия",
+            "cost": 880000.0,
+            "risks": [
+              4.0,
+              4.0,
+              3.0,
+              4.0
+            ]
+          }
+        ],
+        "hurwicz_coefficients": [
+          0.3,
+          0.5,
+          0.7,
+          0.8,
+          0.9
+        ]
+      },
+      "economics": {
+        "initial_investment": 12000000.0,
+        "discount_rate": 18.0,
+        "periods": [
+          {
+            "year": 1,
+            "inflow": 4200000.0,
+            "operating_costs": 900000.0,
+            "risk_losses": 240000.0,
+            "maintenance_costs": 180000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 2,
+            "inflow": 5600000.0,
+            "operating_costs": 1000000.0,
+            "risk_losses": 210000.0,
+            "maintenance_costs": 220000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 3,
+            "inflow": 6900000.0,
+            "operating_costs": 1150000.0,
+            "risk_losses": 180000.0,
+            "maintenance_costs": 260000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 4,
+            "inflow": 7600000.0,
+            "operating_costs": 1250000.0,
+            "risk_losses": 160000.0,
+            "maintenance_costs": 300000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 5,
+            "inflow": 8100000.0,
+            "operating_costs": 1350000.0,
+            "risk_losses": 150000.0,
+            "maintenance_costs": 330000.0,
+            "additional_investment": 0.0
+          }
+        ]
+      }
+    },
+    "output_data": {
+      "project_name": "Демо-проект инновационной модернизации",
+      "created_at": "2026-05-17T14:39:52",
+      "modules": {
+        "production": {
+          "module": "production_program",
+          "input_summary": {
+            "time_fund": 520.0,
+            "takt": 1.8,
+            "items_count": 6
+          },
+          "sequence": [
+            {
+              "order": 1,
+              "name": "Кронштейн",
+              "quantity": 160,
+              "setup_time": 8.0,
+              "production_time": 288.0,
+              "total_time": 296.0,
+              "group": "B",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "included"
+            },
+            {
+              "order": 4,
+              "name": "Корпус редуктора",
+              "quantity": 85,
+              "setup_time": 18.0,
+              "production_time": 153.0,
+              "total_time": 171.0,
+              "group": "A",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "included"
+            }
+          ],
+          "excluded_items": [
+            {
+              "order": 2,
+              "name": "Втулка",
+              "quantity": 140,
+              "setup_time": 10.0,
+              "production_time": 252.0,
+              "total_time": 262.0,
+              "group": "C",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 3,
+              "name": "Вал приводной",
+              "quantity": 120,
+              "setup_time": 12.0,
+              "production_time": 216.0,
+              "total_time": 228.0,
+              "group": "A",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 5,
+              "name": "Фланец",
+              "quantity": 95,
+              "setup_time": 22.0,
+              "production_time": 171.0,
+              "total_time": 193.0,
+              "group": "B",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 6,
+              "name": "Переходник",
+              "quantity": 60,
+              "setup_time": 30.0,
+              "production_time": 108.0,
+              "total_time": 138.0,
+              "group": "C",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            }
+          ],
+          "used_time": 467.0,
+          "remaining_time": 53.0,
+          "utilization_percent": 89.81,
+          "interpretation": "Сформирована квазиоптимальная производственная программа из 2 позиций. Использовано 467.00 из 520.00 единиц фонда времени, коэффициент использования фонда составляет 89.81%. 4 позиций не включено из-за ограничения фонда времени."
+        },
+        "robotics": {
+          "module": "robotic_links",
+          "links": [
+            {
+              "link_number": 1,
+              "d": 28.57,
+              "robot_load_factor": 0.49,
+              "robot_load_percent": 49.0,
+              "machines_count": 3,
+              "operations": [
+                {
+                  "name": "Операция 5",
+                  "machine": "Шлифовальный станок",
+                  "top": 20.0,
+                  "kz": 0.7,
+                  "service_time": 5.0,
+                  "tau": 28.57,
+                  "A": 1,
+                  "k_fact": 0.7,
+                  "delta": 0.0,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 3",
+                  "machine": "Сверлильный станок",
+                  "top": 18.0,
+                  "kz": 0.6,
+                  "service_time": 4.0,
+                  "tau": 30.0,
+                  "A": 1,
+                  "k_fact": 0.63,
+                  "delta": 0.03,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 1",
+                  "machine": "Токарный станок",
+                  "top": 24.0,
+                  "kz": 0.8,
+                  "service_time": 5.0,
+                  "tau": 30.0,
+                  "A": 1,
+                  "k_fact": 0.84,
+                  "delta": 0.04,
+                  "reason": null
+                }
+              ],
+              "assessment": "Недогрузка робота"
+            },
+            {
+              "link_number": 2,
+              "d": 42.67,
+              "robot_load_factor": 0.3,
+              "robot_load_percent": 30.47,
+              "machines_count": 2,
+              "operations": [
+                {
+                  "name": "Операция 2",
+                  "machine": "Фрезерный центр",
+                  "top": 32.0,
+                  "kz": 0.75,
+                  "service_time": 6.0,
+                  "tau": 42.67,
+                  "A": 1,
+                  "k_fact": 0.75,
+                  "delta": 0.0,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 4",
+                  "machine": "Обрабатывающий центр",
+                  "top": 40.0,
+                  "kz": 0.85,
+                  "service_time": 7.0,
+                  "tau": 47.06,
+                  "A": 1,
+                  "k_fact": 0.9375,
+                  "delta": 0.0875,
+                  "reason": null
+                }
+              ],
+              "assessment": "Недогрузка робота"
+            }
+          ],
+          "unassigned_operations": [],
+          "links_count": 2,
+          "average_robot_load_percent": 39.5,
+          "interpretation": "Сформировано 2 роботизированных звеньев. Средняя загрузка роботов составляет 39.73%."
+        },
+        "risks": {
+          "module": "risk_analysis",
+          "events": [
+            "Срыв поставки",
+            "Рост стоимости оборудования",
+            "Простой участка",
+            "Недостижение плановой загрузки"
+          ],
+          "loss_table": [
+            {
+              "strategy": "S1: страхование",
+              "losses": [
+                162000.0,
+                126000.0,
+                108000.0,
+                144000.0
+              ],
+              "total_loss": 540000.0,
+              "strategy_cost": 520000.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "losses": [
+                108000.0,
+                90000.0,
+                72000.0,
+                108000.0
+              ],
+              "total_loss": 378000.0,
+              "strategy_cost": 740000.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "losses": [
+                90000.0,
+                144000.0,
+                54000.0,
+                90000.0
+              ],
+              "total_loss": 378000.0,
+              "strategy_cost": 630000.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "losses": [
+                72000.0,
+                72000.0,
+                54000.0,
+                72000.0
+              ],
+              "total_loss": 270000.0,
+              "strategy_cost": 880000.0
+            }
+          ],
+          "payoff_table": [
+            {
+              "strategy": "S1: страхование",
+              "Dij": [
+                3908000.0,
+                3944000.0,
+                3962000.0,
+                3926000.0
+              ],
+              "Dminij": 3908000.0,
+              "Dmaxij": 3962000.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "Dij": [
+                3907000.0,
+                3925000.0,
+                3943000.0,
+                3907000.0
+              ],
+              "Dminij": 3907000.0,
+              "Dmaxij": 3943000.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "Dij": [
+                3952500.0,
+                3898500.0,
+                3988500.0,
+                3952500.0
+              ],
+              "Dminij": 3898500.0,
+              "Dmaxij": 3988500.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "Dij": [
+                3908000.0,
+                3908000.0,
+                3926000.0,
+                3908000.0
+              ],
+              "Dminij": 3908000.0,
+              "Dmaxij": 3926000.0
+            }
+          ],
+          "best_payoff_by_event": [
+            3952500.0,
+            3944000.0,
+            3988500.0,
+            3952500.0
+          ],
+          "regret_table": [
+            {
+              "strategy": "S1: страхование",
+              "ERij": [
+                44500.0,
+                0.0,
+                26500.0,
+                26500.0
+              ],
+              "ERmaxij": 44500.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "ERij": [
+                45500.0,
+                19000.0,
+                45500.0,
+                45500.0
+              ],
+              "ERmaxij": 45500.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "ERij": [
+                0.0,
+                45500.0,
+                0.0,
+                0.0
+              ],
+              "ERmaxij": 45500.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "ERij": [
+                44500.0,
+                36000.0,
+                62500.0,
+                44500.0
+              ],
+              "ERmaxij": 62500.0
+            }
+          ],
+          "criteria": {
+            "savage_minimax_regret": [
+              "S1: страхование"
+            ],
+            "wald_maximin_pessimism": [
+              "S1: страхование",
+              "S4: комбинированная стратегия"
+            ],
+            "maximax_optimism": [
+              "S3: усиленный контроль"
+            ],
+            "hurwicz": [
+              {
+                "coefficient": 0.3,
+                "best_value": 3961500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.5,
+                "best_value": 3943500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.7,
+                "best_value": 3925500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.8,
+                "best_value": 3918800.0,
+                "strategies": [
+                  "S1: страхование"
+                ]
+              },
+              {
+                "coefficient": 0.9,
+                "best_value": 3913400.0,
+                "strategies": [
+                  "S1: страхование"
+                ]
+              }
+            ],
+            "recommended_strategy": "S1: страхование"
+          },
+          "hurwicz_table": [
+            {
+              "strategy": "S1: страхование",
+              "GHj": [
+                3945800.0,
+                3935000.0,
+                3924200.0,
+                3918800.0,
+                3913400.0
+              ]
+            },
+            {
+              "strategy": "S2: резервирование",
+              "GHj": [
+                3932200.0,
+                3925000.0,
+                3917800.0,
+                3914200.0,
+                3910600.0
+              ]
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "GHj": [
+                3961500.0,
+                3943500.0,
+                3925500.0,
+                3916500.0,
+                3907500.0
+              ]
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "GHj": [
+                3920600.0,
+                3917000.0,
+                3913400.0,
+                3911600.0,
+                3909800.0
+              ]
+            }
+          ],
+          "interpretation": "По критерию Сэвиджа рекомендуется: S1: страхование. По критерию Вальда, то есть по пессимистическому maximin-подходу, рекомендуется: S1: страхование, S4: комбинированная стратегия. Сводная рекомендация системы: стратегия «S1: страхование»."
+        },
+        "economics": {
+          "module": "economics",
+          "initial_investment": 12000000.0,
+          "discount_rate_percent": 18.0,
+          "npv": 2446008.23,
+          "irr_percent": 25.56,
+          "roi_percent": 104.33,
+          "profitability_index": 1.2038,
+          "simple_payback_period_years": 2.93,
+          "discounted_payback_period_years": 4.11,
+          "is_effective": true,
+          "flows": [
+            {
+              "year": 1,
+              "inflow": 4200000.0,
+              "operating_costs": 900000.0,
+              "risk_losses": 240000.0,
+              "maintenance_costs": 180000.0,
+              "additional_investment": 0.0,
+              "net_flow": 2880000.0,
+              "discounted_flow": 2440677.97,
+              "cumulative_simple_flow": -9120000.0,
+              "cumulative_discounted_flow": -9559322.03
+            },
+            {
+              "year": 2,
+              "inflow": 5600000.0,
+              "operating_costs": 1000000.0,
+              "risk_losses": 210000.0,
+              "maintenance_costs": 220000.0,
+              "additional_investment": 0.0,
+              "net_flow": 4170000.0,
+              "discounted_flow": 2994829.07,
+              "cumulative_simple_flow": -4950000.0,
+              "cumulative_discounted_flow": -6564492.96
+            },
+            {
+              "year": 3,
+              "inflow": 6900000.0,
+              "operating_costs": 1150000.0,
+              "risk_losses": 180000.0,
+              "maintenance_costs": 260000.0,
+              "additional_investment": 0.0,
+              "net_flow": 5310000.0,
+              "discounted_flow": 3231829.93,
+              "cumulative_simple_flow": 360000.0,
+              "cumulative_discounted_flow": -3332663.03
+            },
+            {
+              "year": 4,
+              "inflow": 7600000.0,
+              "operating_costs": 1250000.0,
+              "risk_losses": 160000.0,
+              "maintenance_costs": 300000.0,
+              "additional_investment": 0.0,
+              "net_flow": 5890000.0,
+              "discounted_flow": 3037996.47,
+              "cumulative_simple_flow": 6250000.0,
+              "cumulative_discounted_flow": -294666.55
+            },
+            {
+              "year": 5,
+              "inflow": 8100000.0,
+              "operating_costs": 1350000.0,
+              "risk_losses": 150000.0,
+              "maintenance_costs": 330000.0,
+              "additional_investment": 0.0,
+              "net_flow": 6270000.0,
+              "discounted_flow": 2740674.79,
+              "cumulative_simple_flow": 12520000.0,
+              "cumulative_discounted_flow": 2446008.23
+            }
+          ],
+          "sensitivity": {
+            "discount_rate_minus_5pp": 4510042.7,
+            "discount_rate_base": 2446008.23,
+            "discount_rate_plus_5pp": 751705.74,
+            "investment_minus_10_percent": 3646008.23,
+            "investment_plus_10_percent": 1246008.23,
+            "inflow_minus_10_percent": 521879.44,
+            "inflow_plus_10_percent": 4370137.03
+          },
+          "interpretation": "NPV проекта составляет 2446008.23. Следовательно, проект экономически эффективен, так как ЧДД/NPV положителен. Индекс доходности равен 1.2038, ROI составляет 104.33%."
+        }
+      },
+      "summary": {
+        "npv": 2446008.23,
+        "irr_percent": 25.56,
+        "payback": 4.11,
+        "is_effective": true,
+        "recommended_risk_strategy": "S1: страхование",
+        "production_utilization_percent": 89.81,
+        "average_robot_load_percent": 39.5
+      }
+    }
+  },
+  {
+    "id": "bf7bb4bc-6dbb-4dea-863a-07807858c6bd",
+    "module": "production",
+    "created_at": "2026-05-17T14:38:03",
+    "input_data": {
+      "time_fund": 520.0,
+      "takt": 10.8,
+      "items": [
+        {
+          "name": "Корпус редуктора",
+          "quantity": 85,
+          "setup_time": 18.0,
+          "group": "A",
+          "comment": null
+        },
+        {
+          "name": "Вал приводной",
+          "quantity": 120,
+          "setup_time": 12.0,
+          "group": "A",
+          "comment": null
+        },
+        {
+          "name": "Кронштейн",
+          "quantity": 160,
+          "setup_time": 8.0,
+          "group": "B",
+          "comment": null
+        },
+        {
+          "name": "Фланец",
+          "quantity": 95,
+          "setup_time": 22.0,
+          "group": "B",
+          "comment": null
+        },
+        {
+          "name": "Втулка",
+          "quantity": 140,
+          "setup_time": 10.0,
+          "group": "C",
+          "comment": null
+        },
+        {
+          "name": "Переходник",
+          "quantity": 60,
+          "setup_time": 30.0,
+          "group": "C",
+          "comment": null
+        }
+      ]
+    },
+    "output_data": {
+      "module": "production_program",
+      "input_summary": {
+        "time_fund": 520.0,
+        "takt": 10.8,
+        "items_count": 6
+      },
+      "sequence": [],
+      "excluded_items": [
+        {
+          "order": 1,
+          "name": "Кронштейн",
+          "quantity": 160,
+          "setup_time": 8.0,
+          "production_time": 1728.0,
+          "total_time": 1736.0,
+          "group": "B",
+          "comment": null,
+          "cumulative_time": 0.0,
+          "status": "excluded",
+          "reason": "Не хватает доступного фонда времени"
+        },
+        {
+          "order": 2,
+          "name": "Втулка",
+          "quantity": 140,
+          "setup_time": 10.0,
+          "production_time": 1512.0,
+          "total_time": 1522.0,
+          "group": "C",
+          "comment": null,
+          "cumulative_time": 0.0,
+          "status": "excluded",
+          "reason": "Не хватает доступного фонда времени"
+        },
+        {
+          "order": 3,
+          "name": "Вал приводной",
+          "quantity": 120,
+          "setup_time": 12.0,
+          "production_time": 1296.0,
+          "total_time": 1308.0,
+          "group": "A",
+          "comment": null,
+          "cumulative_time": 0.0,
+          "status": "excluded",
+          "reason": "Не хватает доступного фонда времени"
+        },
+        {
+          "order": 4,
+          "name": "Корпус редуктора",
+          "quantity": 85,
+          "setup_time": 18.0,
+          "production_time": 918.0,
+          "total_time": 936.0,
+          "group": "A",
+          "comment": null,
+          "cumulative_time": 0.0,
+          "status": "excluded",
+          "reason": "Не хватает доступного фонда времени"
+        },
+        {
+          "order": 5,
+          "name": "Фланец",
+          "quantity": 95,
+          "setup_time": 22.0,
+          "production_time": 1026.0,
+          "total_time": 1048.0,
+          "group": "B",
+          "comment": null,
+          "cumulative_time": 0.0,
+          "status": "excluded",
+          "reason": "Не хватает доступного фонда времени"
+        },
+        {
+          "order": 6,
+          "name": "Переходник",
+          "quantity": 60,
+          "setup_time": 30.0,
+          "production_time": 648.0,
+          "total_time": 678.0,
+          "group": "C",
+          "comment": null,
+          "cumulative_time": 0.0,
+          "status": "excluded",
+          "reason": "Не хватает доступного фонда времени"
+        }
+      ],
+      "used_time": 0.0,
+      "remaining_time": 520.0,
+      "utilization_percent": 0.0,
+      "interpretation": "Ни одна позиция не включена в производственную программу: доступного фонда времени недостаточно."
+    }
+  },
+  {
+    "id": "71640355-c328-41e7-9892-3a54fcd79053",
+    "module": "production",
+    "created_at": "2026-05-17T14:37:43",
+    "input_data": {
+      "time_fund": 520000.0,
+      "takt": 1.8,
+      "items": [
+        {
+          "name": "Корпус редуктора",
+          "quantity": 85,
+          "setup_time": 18.0,
+          "group": "A",
+          "comment": null
+        },
+        {
+          "name": "Вал приводной",
+          "quantity": 120,
+          "setup_time": 12.0,
+          "group": "A",
+          "comment": null
+        },
+        {
+          "name": "Кронштейн",
+          "quantity": 160,
+          "setup_time": 8.0,
+          "group": "B",
+          "comment": null
+        },
+        {
+          "name": "Фланец",
+          "quantity": 95,
+          "setup_time": 22.0,
+          "group": "B",
+          "comment": null
+        },
+        {
+          "name": "Втулка",
+          "quantity": 140,
+          "setup_time": 10.0,
+          "group": "C",
+          "comment": null
+        },
+        {
+          "name": "Переходник",
+          "quantity": 60,
+          "setup_time": 30.0,
+          "group": "C",
+          "comment": null
+        }
+      ]
+    },
+    "output_data": {
+      "module": "production_program",
+      "input_summary": {
+        "time_fund": 520000.0,
+        "takt": 1.8,
+        "items_count": 6
+      },
+      "sequence": [
+        {
+          "order": 1,
+          "name": "Кронштейн",
+          "quantity": 160,
+          "setup_time": 8.0,
+          "production_time": 288.0,
+          "total_time": 296.0,
+          "group": "B",
+          "comment": null,
+          "cumulative_time": 296.0,
+          "status": "included"
+        },
+        {
+          "order": 2,
+          "name": "Втулка",
+          "quantity": 140,
+          "setup_time": 10.0,
+          "production_time": 252.0,
+          "total_time": 262.0,
+          "group": "C",
+          "comment": null,
+          "cumulative_time": 558.0,
+          "status": "included"
+        },
+        {
+          "order": 3,
+          "name": "Вал приводной",
+          "quantity": 120,
+          "setup_time": 12.0,
+          "production_time": 216.0,
+          "total_time": 228.0,
+          "group": "A",
+          "comment": null,
+          "cumulative_time": 786.0,
+          "status": "included"
+        },
+        {
+          "order": 4,
+          "name": "Корпус редуктора",
+          "quantity": 85,
+          "setup_time": 18.0,
+          "production_time": 153.0,
+          "total_time": 171.0,
+          "group": "A",
+          "comment": null,
+          "cumulative_time": 957.0,
+          "status": "included"
+        },
+        {
+          "order": 5,
+          "name": "Фланец",
+          "quantity": 95,
+          "setup_time": 22.0,
+          "production_time": 171.0,
+          "total_time": 193.0,
+          "group": "B",
+          "comment": null,
+          "cumulative_time": 1150.0,
+          "status": "included"
+        },
+        {
+          "order": 6,
+          "name": "Переходник",
+          "quantity": 60,
+          "setup_time": 30.0,
+          "production_time": 108.0,
+          "total_time": 138.0,
+          "group": "C",
+          "comment": null,
+          "cumulative_time": 1288.0,
+          "status": "included"
+        }
+      ],
+      "excluded_items": [],
+      "used_time": 1288.0,
+      "remaining_time": 518712.0,
+      "utilization_percent": 0.25,
+      "interpretation": "Сформирована квазиоптимальная производственная программа из 6 позиций. Использовано 1288.00 из 520000.00 единиц фонда времени, коэффициент использования фонда составляет 0.25%. Все заданные позиции включены в программу."
+    }
+  },
+  {
+    "id": "367efb5c-7f11-4342-a853-c4c83859def1",
+    "module": "full_project",
+    "created_at": "2026-05-17T14:13:31",
+    "input_data": {
+      "name": "Демо-проект инновационной модернизации",
+      "production": {
+        "time_fund": 520.0,
+        "takt": 1.8,
+        "items": [
+          {
+            "name": "Корпус редуктора",
+            "quantity": 85,
+            "setup_time": 18.0,
+            "group": "A",
+            "comment": null
+          },
+          {
+            "name": "Вал приводной",
+            "quantity": 120,
+            "setup_time": 12.0,
+            "group": "A",
+            "comment": null
+          },
+          {
+            "name": "Кронштейн",
+            "quantity": 160,
+            "setup_time": 8.0,
+            "group": "B",
+            "comment": null
+          },
+          {
+            "name": "Фланец",
+            "quantity": 95,
+            "setup_time": 22.0,
+            "group": "B",
+            "comment": null
+          },
+          {
+            "name": "Втулка",
+            "quantity": 140,
+            "setup_time": 10.0,
+            "group": "C",
+            "comment": null
+          },
+          {
+            "name": "Переходник",
+            "quantity": 60,
+            "setup_time": 30.0,
+            "group": "C",
+            "comment": null
+          }
+        ]
+      },
+      "robotics": {
+        "max_machines_per_robot": 3,
+        "max_deviation": 0.22,
+        "operations": [
+          {
+            "name": "Операция 1",
+            "top": 24.0,
+            "kz": 0.8,
+            "service_time": 5.0,
+            "machine": "Токарный станок",
+            "comment": null
+          },
+          {
+            "name": "Операция 2",
+            "top": 32.0,
+            "kz": 0.75,
+            "service_time": 6.0,
+            "machine": "Фрезерный центр",
+            "comment": null
+          },
+          {
+            "name": "Операция 3",
+            "top": 18.0,
+            "kz": 0.6,
+            "service_time": 4.0,
+            "machine": "Сверлильный станок",
+            "comment": null
+          },
+          {
+            "name": "Операция 4",
+            "top": 40.0,
+            "kz": 0.85,
+            "service_time": 7.0,
+            "machine": "Обрабатывающий центр",
+            "comment": null
+          },
+          {
+            "name": "Операция 5",
+            "top": 20.0,
+            "kz": 0.7,
+            "service_time": 5.0,
+            "machine": "Шлифовальный станок",
+            "comment": null
+          }
+        ]
+      },
+      "risks": {
+        "events": [
+          "Срыв поставки",
+          "Рост стоимости оборудования",
+          "Простой участка",
+          "Недостижение плановой загрузки"
+        ],
+        "base_loss": 1800000.0,
+        "profitability_threshold": 4200000.0,
+        "strategies": [
+          {
+            "name": "S1: страхование",
+            "cost": 520000.0,
+            "risks": [
+              9.0,
+              7.0,
+              6.0,
+              8.0
+            ]
+          },
+          {
+            "name": "S2: резервирование",
+            "cost": 740000.0,
+            "risks": [
+              6.0,
+              5.0,
+              4.0,
+              6.0
+            ]
+          },
+          {
+            "name": "S3: усиленный контроль",
+            "cost": 630000.0,
+            "risks": [
+              5.0,
+              8.0,
+              3.0,
+              5.0
+            ]
+          },
+          {
+            "name": "S4: комбинированная стратегия",
+            "cost": 880000.0,
+            "risks": [
+              4.0,
+              4.0,
+              3.0,
+              4.0
+            ]
+          }
+        ],
+        "hurwicz_coefficients": [
+          0.3,
+          0.5,
+          0.7,
+          0.8,
+          0.9
+        ]
+      },
+      "economics": {
+        "initial_investment": 12000000.0,
+        "discount_rate": 18.0,
+        "periods": [
+          {
+            "year": 1,
+            "inflow": 4200000.0,
+            "operating_costs": 900000.0,
+            "risk_losses": 240000.0,
+            "maintenance_costs": 180000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 2,
+            "inflow": 5600000.0,
+            "operating_costs": 1000000.0,
+            "risk_losses": 210000.0,
+            "maintenance_costs": 220000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 3,
+            "inflow": 6900000.0,
+            "operating_costs": 1150000.0,
+            "risk_losses": 180000.0,
+            "maintenance_costs": 260000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 4,
+            "inflow": 7600000.0,
+            "operating_costs": 1250000.0,
+            "risk_losses": 160000.0,
+            "maintenance_costs": 300000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 5,
+            "inflow": 8100000.0,
+            "operating_costs": 1350000.0,
+            "risk_losses": 150000.0,
+            "maintenance_costs": 330000.0,
+            "additional_investment": 0.0
+          }
+        ]
+      }
+    },
+    "output_data": {
+      "project_name": "Демо-проект инновационной модернизации",
+      "created_at": "2026-05-17T14:13:31",
+      "modules": {
+        "production": {
+          "module": "production_program",
+          "input_summary": {
+            "time_fund": 520.0,
+            "takt": 1.8,
+            "items_count": 6
+          },
+          "sequence": [
+            {
+              "order": 1,
+              "name": "Кронштейн",
+              "quantity": 160,
+              "setup_time": 8.0,
+              "production_time": 288.0,
+              "total_time": 296.0,
+              "group": "B",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "included"
+            },
+            {
+              "order": 4,
+              "name": "Корпус редуктора",
+              "quantity": 85,
+              "setup_time": 18.0,
+              "production_time": 153.0,
+              "total_time": 171.0,
+              "group": "A",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "included"
+            }
+          ],
+          "excluded_items": [
+            {
+              "order": 2,
+              "name": "Втулка",
+              "quantity": 140,
+              "setup_time": 10.0,
+              "production_time": 252.0,
+              "total_time": 262.0,
+              "group": "C",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 3,
+              "name": "Вал приводной",
+              "quantity": 120,
+              "setup_time": 12.0,
+              "production_time": 216.0,
+              "total_time": 228.0,
+              "group": "A",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 5,
+              "name": "Фланец",
+              "quantity": 95,
+              "setup_time": 22.0,
+              "production_time": 171.0,
+              "total_time": 193.0,
+              "group": "B",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 6,
+              "name": "Переходник",
+              "quantity": 60,
+              "setup_time": 30.0,
+              "production_time": 108.0,
+              "total_time": 138.0,
+              "group": "C",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            }
+          ],
+          "used_time": 467.0,
+          "remaining_time": 53.0,
+          "utilization_percent": 89.81,
+          "interpretation": "Сформирована квазиоптимальная производственная программа из 2 позиций. Использовано 467.00 из 520.00 единиц фонда времени, коэффициент использования фонда составляет 89.81%. 4 позиций не включено из-за ограничения фонда времени."
+        },
+        "robotics": {
+          "module": "robotic_links",
+          "links": [
+            {
+              "link_number": 1,
+              "d": 28.57,
+              "robot_load_factor": 0.49,
+              "robot_load_percent": 49.0,
+              "machines_count": 3,
+              "operations": [
+                {
+                  "name": "Операция 5",
+                  "machine": "Шлифовальный станок",
+                  "top": 20.0,
+                  "kz": 0.7,
+                  "service_time": 5.0,
+                  "tau": 28.57,
+                  "A": 1,
+                  "k_fact": 0.7,
+                  "delta": 0.0,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 3",
+                  "machine": "Сверлильный станок",
+                  "top": 18.0,
+                  "kz": 0.6,
+                  "service_time": 4.0,
+                  "tau": 30.0,
+                  "A": 1,
+                  "k_fact": 0.63,
+                  "delta": 0.03,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 1",
+                  "machine": "Токарный станок",
+                  "top": 24.0,
+                  "kz": 0.8,
+                  "service_time": 5.0,
+                  "tau": 30.0,
+                  "A": 1,
+                  "k_fact": 0.84,
+                  "delta": 0.04,
+                  "reason": null
+                }
+              ],
+              "assessment": "Недогрузка робота"
+            },
+            {
+              "link_number": 2,
+              "d": 42.67,
+              "robot_load_factor": 0.3,
+              "robot_load_percent": 30.47,
+              "machines_count": 2,
+              "operations": [
+                {
+                  "name": "Операция 2",
+                  "machine": "Фрезерный центр",
+                  "top": 32.0,
+                  "kz": 0.75,
+                  "service_time": 6.0,
+                  "tau": 42.67,
+                  "A": 1,
+                  "k_fact": 0.75,
+                  "delta": 0.0,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 4",
+                  "machine": "Обрабатывающий центр",
+                  "top": 40.0,
+                  "kz": 0.85,
+                  "service_time": 7.0,
+                  "tau": 47.06,
+                  "A": 1,
+                  "k_fact": 0.9375,
+                  "delta": 0.0875,
+                  "reason": null
+                }
+              ],
+              "assessment": "Недогрузка робота"
+            }
+          ],
+          "unassigned_operations": [],
+          "links_count": 2,
+          "average_robot_load_percent": 39.5,
+          "interpretation": "Сформировано 2 роботизированных звеньев. Средняя загрузка роботов составляет 39.73%."
+        },
+        "risks": {
+          "module": "risk_analysis",
+          "events": [
+            "Срыв поставки",
+            "Рост стоимости оборудования",
+            "Простой участка",
+            "Недостижение плановой загрузки"
+          ],
+          "loss_table": [
+            {
+              "strategy": "S1: страхование",
+              "losses": [
+                162000.0,
+                126000.0,
+                108000.0,
+                144000.0
+              ],
+              "total_loss": 540000.0,
+              "strategy_cost": 520000.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "losses": [
+                108000.0,
+                90000.0,
+                72000.0,
+                108000.0
+              ],
+              "total_loss": 378000.0,
+              "strategy_cost": 740000.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "losses": [
+                90000.0,
+                144000.0,
+                54000.0,
+                90000.0
+              ],
+              "total_loss": 378000.0,
+              "strategy_cost": 630000.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "losses": [
+                72000.0,
+                72000.0,
+                54000.0,
+                72000.0
+              ],
+              "total_loss": 270000.0,
+              "strategy_cost": 880000.0
+            }
+          ],
+          "payoff_table": [
+            {
+              "strategy": "S1: страхование",
+              "Dij": [
+                3908000.0,
+                3944000.0,
+                3962000.0,
+                3926000.0
+              ],
+              "Dminij": 3908000.0,
+              "Dmaxij": 3962000.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "Dij": [
+                3907000.0,
+                3925000.0,
+                3943000.0,
+                3907000.0
+              ],
+              "Dminij": 3907000.0,
+              "Dmaxij": 3943000.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "Dij": [
+                3952500.0,
+                3898500.0,
+                3988500.0,
+                3952500.0
+              ],
+              "Dminij": 3898500.0,
+              "Dmaxij": 3988500.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "Dij": [
+                3908000.0,
+                3908000.0,
+                3926000.0,
+                3908000.0
+              ],
+              "Dminij": 3908000.0,
+              "Dmaxij": 3926000.0
+            }
+          ],
+          "best_payoff_by_event": [
+            3952500.0,
+            3944000.0,
+            3988500.0,
+            3952500.0
+          ],
+          "regret_table": [
+            {
+              "strategy": "S1: страхование",
+              "ERij": [
+                44500.0,
+                0.0,
+                26500.0,
+                26500.0
+              ],
+              "ERmaxij": 44500.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "ERij": [
+                45500.0,
+                19000.0,
+                45500.0,
+                45500.0
+              ],
+              "ERmaxij": 45500.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "ERij": [
+                0.0,
+                45500.0,
+                0.0,
+                0.0
+              ],
+              "ERmaxij": 45500.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "ERij": [
+                44500.0,
+                36000.0,
+                62500.0,
+                44500.0
+              ],
+              "ERmaxij": 62500.0
+            }
+          ],
+          "criteria": {
+            "savage_minimax_regret": [
+              "S1: страхование"
+            ],
+            "wald_maximin_pessimism": [
+              "S1: страхование",
+              "S4: комбинированная стратегия"
+            ],
+            "maximax_optimism": [
+              "S3: усиленный контроль"
+            ],
+            "hurwicz": [
+              {
+                "coefficient": 0.3,
+                "best_value": 3961500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.5,
+                "best_value": 3943500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.7,
+                "best_value": 3925500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.8,
+                "best_value": 3918800.0,
+                "strategies": [
+                  "S1: страхование"
+                ]
+              },
+              {
+                "coefficient": 0.9,
+                "best_value": 3913400.0,
+                "strategies": [
+                  "S1: страхование"
+                ]
+              }
+            ],
+            "recommended_strategy": "S1: страхование"
+          },
+          "hurwicz_table": [
+            {
+              "strategy": "S1: страхование",
+              "GHj": [
+                3945800.0,
+                3935000.0,
+                3924200.0,
+                3918800.0,
+                3913400.0
+              ]
+            },
+            {
+              "strategy": "S2: резервирование",
+              "GHj": [
+                3932200.0,
+                3925000.0,
+                3917800.0,
+                3914200.0,
+                3910600.0
+              ]
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "GHj": [
+                3961500.0,
+                3943500.0,
+                3925500.0,
+                3916500.0,
+                3907500.0
+              ]
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "GHj": [
+                3920600.0,
+                3917000.0,
+                3913400.0,
+                3911600.0,
+                3909800.0
+              ]
+            }
+          ],
+          "interpretation": "По критерию Сэвиджа рекомендуется: S1: страхование. По критерию Вальда, то есть по пессимистическому maximin-подходу, рекомендуется: S1: страхование, S4: комбинированная стратегия. Сводная рекомендация системы: стратегия «S1: страхование»."
+        },
+        "economics": {
+          "module": "economics",
+          "initial_investment": 12000000.0,
+          "discount_rate_percent": 18.0,
+          "npv": 2446008.23,
+          "irr_percent": 25.56,
+          "roi_percent": 104.33,
+          "profitability_index": 1.2038,
+          "simple_payback_period_years": 2.93,
+          "discounted_payback_period_years": 4.11,
+          "is_effective": true,
+          "flows": [
+            {
+              "year": 1,
+              "inflow": 4200000.0,
+              "operating_costs": 900000.0,
+              "risk_losses": 240000.0,
+              "maintenance_costs": 180000.0,
+              "additional_investment": 0.0,
+              "net_flow": 2880000.0,
+              "discounted_flow": 2440677.97,
+              "cumulative_simple_flow": -9120000.0,
+              "cumulative_discounted_flow": -9559322.03
+            },
+            {
+              "year": 2,
+              "inflow": 5600000.0,
+              "operating_costs": 1000000.0,
+              "risk_losses": 210000.0,
+              "maintenance_costs": 220000.0,
+              "additional_investment": 0.0,
+              "net_flow": 4170000.0,
+              "discounted_flow": 2994829.07,
+              "cumulative_simple_flow": -4950000.0,
+              "cumulative_discounted_flow": -6564492.96
+            },
+            {
+              "year": 3,
+              "inflow": 6900000.0,
+              "operating_costs": 1150000.0,
+              "risk_losses": 180000.0,
+              "maintenance_costs": 260000.0,
+              "additional_investment": 0.0,
+              "net_flow": 5310000.0,
+              "discounted_flow": 3231829.93,
+              "cumulative_simple_flow": 360000.0,
+              "cumulative_discounted_flow": -3332663.03
+            },
+            {
+              "year": 4,
+              "inflow": 7600000.0,
+              "operating_costs": 1250000.0,
+              "risk_losses": 160000.0,
+              "maintenance_costs": 300000.0,
+              "additional_investment": 0.0,
+              "net_flow": 5890000.0,
+              "discounted_flow": 3037996.47,
+              "cumulative_simple_flow": 6250000.0,
+              "cumulative_discounted_flow": -294666.55
+            },
+            {
+              "year": 5,
+              "inflow": 8100000.0,
+              "operating_costs": 1350000.0,
+              "risk_losses": 150000.0,
+              "maintenance_costs": 330000.0,
+              "additional_investment": 0.0,
+              "net_flow": 6270000.0,
+              "discounted_flow": 2740674.79,
+              "cumulative_simple_flow": 12520000.0,
+              "cumulative_discounted_flow": 2446008.23
+            }
+          ],
+          "sensitivity": {
+            "discount_rate_minus_5pp": 4510042.7,
+            "discount_rate_base": 2446008.23,
+            "discount_rate_plus_5pp": 751705.74,
+            "investment_minus_10_percent": 3646008.23,
+            "investment_plus_10_percent": 1246008.23,
+            "inflow_minus_10_percent": 521879.44,
+            "inflow_plus_10_percent": 4370137.03
+          },
+          "interpretation": "NPV проекта составляет 2446008.23. Следовательно, проект экономически эффективен, так как ЧДД/NPV положителен. Индекс доходности равен 1.2038, ROI составляет 104.33%."
+        }
+      },
+      "summary": {
+        "npv": 2446008.23,
+        "irr_percent": 25.56,
+        "payback": 4.11,
+        "is_effective": true,
+        "recommended_risk_strategy": "S1: страхование",
+        "production_utilization_percent": 89.81,
+        "average_robot_load_percent": 39.5
+      }
+    }
+  },
+  {
+    "id": "fd620e8f-7fbb-4403-be3d-c9b59f809b57",
+    "module": "economics",
+    "created_at": "2026-05-17T14:13:24",
+    "input_data": {
+      "initial_investment": 12000000.0,
+      "discount_rate": 18.0,
+      "periods": [
+        {
+          "year": 1,
+          "inflow": 4200000.0,
+          "operating_costs": 900000.0,
+          "risk_losses": 240000.0,
+          "maintenance_costs": 180000.0,
+          "additional_investment": 0.0
+        },
+        {
+          "year": 2,
+          "inflow": 5600000.0,
+          "operating_costs": 1000000.0,
+          "risk_losses": 210000.0,
+          "maintenance_costs": 220000.0,
+          "additional_investment": 0.0
+        },
+        {
+          "year": 3,
+          "inflow": 6900000.0,
+          "operating_costs": 1150000.0,
+          "risk_losses": 180000.0,
+          "maintenance_costs": 260000.0,
+          "additional_investment": 0.0
+        },
+        {
+          "year": 4,
+          "inflow": 7600000.0,
+          "operating_costs": 1250000.0,
+          "risk_losses": 160000.0,
+          "maintenance_costs": 300000.0,
+          "additional_investment": 0.0
+        },
+        {
+          "year": 5,
+          "inflow": 8100000.0,
+          "operating_costs": 1350000.0,
+          "risk_losses": 150000.0,
+          "maintenance_costs": 330000.0,
+          "additional_investment": 0.0
+        }
+      ]
+    },
+    "output_data": {
+      "module": "economics",
+      "initial_investment": 12000000.0,
+      "discount_rate_percent": 18.0,
+      "npv": 2446008.23,
+      "irr_percent": 25.56,
+      "roi_percent": 104.33,
+      "profitability_index": 1.2038,
+      "simple_payback_period_years": 2.93,
+      "discounted_payback_period_years": 4.11,
+      "is_effective": true,
+      "flows": [
+        {
+          "year": 1,
+          "inflow": 4200000.0,
+          "operating_costs": 900000.0,
+          "risk_losses": 240000.0,
+          "maintenance_costs": 180000.0,
+          "additional_investment": 0.0,
+          "net_flow": 2880000.0,
+          "discounted_flow": 2440677.97,
+          "cumulative_simple_flow": -9120000.0,
+          "cumulative_discounted_flow": -9559322.03
+        },
+        {
+          "year": 2,
+          "inflow": 5600000.0,
+          "operating_costs": 1000000.0,
+          "risk_losses": 210000.0,
+          "maintenance_costs": 220000.0,
+          "additional_investment": 0.0,
+          "net_flow": 4170000.0,
+          "discounted_flow": 2994829.07,
+          "cumulative_simple_flow": -4950000.0,
+          "cumulative_discounted_flow": -6564492.96
+        },
+        {
+          "year": 3,
+          "inflow": 6900000.0,
+          "operating_costs": 1150000.0,
+          "risk_losses": 180000.0,
+          "maintenance_costs": 260000.0,
+          "additional_investment": 0.0,
+          "net_flow": 5310000.0,
+          "discounted_flow": 3231829.93,
+          "cumulative_simple_flow": 360000.0,
+          "cumulative_discounted_flow": -3332663.03
+        },
+        {
+          "year": 4,
+          "inflow": 7600000.0,
+          "operating_costs": 1250000.0,
+          "risk_losses": 160000.0,
+          "maintenance_costs": 300000.0,
+          "additional_investment": 0.0,
+          "net_flow": 5890000.0,
+          "discounted_flow": 3037996.47,
+          "cumulative_simple_flow": 6250000.0,
+          "cumulative_discounted_flow": -294666.55
+        },
+        {
+          "year": 5,
+          "inflow": 8100000.0,
+          "operating_costs": 1350000.0,
+          "risk_losses": 150000.0,
+          "maintenance_costs": 330000.0,
+          "additional_investment": 0.0,
+          "net_flow": 6270000.0,
+          "discounted_flow": 2740674.79,
+          "cumulative_simple_flow": 12520000.0,
+          "cumulative_discounted_flow": 2446008.23
+        }
+      ],
+      "sensitivity": {
+        "discount_rate_minus_5pp": 4510042.7,
+        "discount_rate_base": 2446008.23,
+        "discount_rate_plus_5pp": 751705.74,
+        "investment_minus_10_percent": 3646008.23,
+        "investment_plus_10_percent": 1246008.23,
+        "inflow_minus_10_percent": 521879.44,
+        "inflow_plus_10_percent": 4370137.03
+      },
+      "interpretation": "NPV проекта составляет 2446008.23. Следовательно, проект экономически эффективен, так как ЧДД/NPV положителен. Индекс доходности равен 1.2038, ROI составляет 104.33%."
+    }
+  },
+  {
+    "id": "7838263c-5471-4d87-bc78-ac70cb6653e8",
+    "module": "full_project",
+    "created_at": "2026-05-17T14:13:07",
+    "input_data": {
+      "name": "Демо-проект инновационной модернизации",
+      "production": {
+        "time_fund": 520.0,
+        "takt": 1.8,
+        "items": [
+          {
+            "name": "Корпус редуктора",
+            "quantity": 85,
+            "setup_time": 18.0,
+            "group": "A",
+            "comment": null
+          },
+          {
+            "name": "Вал приводной",
+            "quantity": 120,
+            "setup_time": 12.0,
+            "group": "A",
+            "comment": null
+          },
+          {
+            "name": "Кронштейн",
+            "quantity": 160,
+            "setup_time": 8.0,
+            "group": "B",
+            "comment": null
+          },
+          {
+            "name": "Фланец",
+            "quantity": 95,
+            "setup_time": 22.0,
+            "group": "B",
+            "comment": null
+          },
+          {
+            "name": "Втулка",
+            "quantity": 140,
+            "setup_time": 10.0,
+            "group": "C",
+            "comment": null
+          },
+          {
+            "name": "Переходник",
+            "quantity": 60,
+            "setup_time": 30.0,
+            "group": "C",
+            "comment": null
+          }
+        ]
+      },
+      "robotics": {
+        "max_machines_per_robot": 3,
+        "max_deviation": 0.22,
+        "operations": [
+          {
+            "name": "Операция 1",
+            "top": 24.0,
+            "kz": 0.8,
+            "service_time": 5.0,
+            "machine": "Токарный станок",
+            "comment": null
+          },
+          {
+            "name": "Операция 2",
+            "top": 32.0,
+            "kz": 0.75,
+            "service_time": 6.0,
+            "machine": "Фрезерный центр",
+            "comment": null
+          },
+          {
+            "name": "Операция 3",
+            "top": 18.0,
+            "kz": 0.6,
+            "service_time": 4.0,
+            "machine": "Сверлильный станок",
+            "comment": null
+          },
+          {
+            "name": "Операция 4",
+            "top": 40.0,
+            "kz": 0.85,
+            "service_time": 7.0,
+            "machine": "Обрабатывающий центр",
+            "comment": null
+          },
+          {
+            "name": "Операция 5",
+            "top": 20.0,
+            "kz": 0.7,
+            "service_time": 5.0,
+            "machine": "Шлифовальный станок",
+            "comment": null
+          }
+        ]
+      },
+      "risks": {
+        "events": [
+          "Срыв поставки",
+          "Рост стоимости оборудования",
+          "Простой участка",
+          "Недостижение плановой загрузки"
+        ],
+        "base_loss": 1800000.0,
+        "profitability_threshold": 4200000.0,
+        "strategies": [
+          {
+            "name": "S1: страхование",
+            "cost": 520000.0,
+            "risks": [
+              9.0,
+              7.0,
+              6.0,
+              8.0
+            ]
+          },
+          {
+            "name": "S2: резервирование",
+            "cost": 740000.0,
+            "risks": [
+              6.0,
+              5.0,
+              4.0,
+              6.0
+            ]
+          },
+          {
+            "name": "S3: усиленный контроль",
+            "cost": 630000.0,
+            "risks": [
+              5.0,
+              8.0,
+              3.0,
+              5.0
+            ]
+          },
+          {
+            "name": "S4: комбинированная стратегия",
+            "cost": 880000.0,
+            "risks": [
+              4.0,
+              4.0,
+              3.0,
+              4.0
+            ]
+          }
+        ],
+        "hurwicz_coefficients": [
+          0.3,
+          0.5,
+          0.7,
+          0.8,
+          0.9
+        ]
+      },
+      "economics": {
+        "initial_investment": 12000000.0,
+        "discount_rate": 18.0,
+        "periods": [
+          {
+            "year": 1,
+            "inflow": 4200000.0,
+            "operating_costs": 900000.0,
+            "risk_losses": 240000.0,
+            "maintenance_costs": 180000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 2,
+            "inflow": 5600000.0,
+            "operating_costs": 1000000.0,
+            "risk_losses": 210000.0,
+            "maintenance_costs": 220000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 3,
+            "inflow": 6900000.0,
+            "operating_costs": 1150000.0,
+            "risk_losses": 180000.0,
+            "maintenance_costs": 260000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 4,
+            "inflow": 7600000.0,
+            "operating_costs": 1250000.0,
+            "risk_losses": 160000.0,
+            "maintenance_costs": 300000.0,
+            "additional_investment": 0.0
+          },
+          {
+            "year": 5,
+            "inflow": 8100000.0,
+            "operating_costs": 1350000.0,
+            "risk_losses": 150000.0,
+            "maintenance_costs": 330000.0,
+            "additional_investment": 0.0
+          }
+        ]
+      }
+    },
+    "output_data": {
+      "project_name": "Демо-проект инновационной модернизации",
+      "created_at": "2026-05-17T14:13:07",
+      "modules": {
+        "production": {
+          "module": "production_program",
+          "input_summary": {
+            "time_fund": 520.0,
+            "takt": 1.8,
+            "items_count": 6
+          },
+          "sequence": [
+            {
+              "order": 1,
+              "name": "Кронштейн",
+              "quantity": 160,
+              "setup_time": 8.0,
+              "production_time": 288.0,
+              "total_time": 296.0,
+              "group": "B",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "included"
+            },
+            {
+              "order": 4,
+              "name": "Корпус редуктора",
+              "quantity": 85,
+              "setup_time": 18.0,
+              "production_time": 153.0,
+              "total_time": 171.0,
+              "group": "A",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "included"
+            }
+          ],
+          "excluded_items": [
+            {
+              "order": 2,
+              "name": "Втулка",
+              "quantity": 140,
+              "setup_time": 10.0,
+              "production_time": 252.0,
+              "total_time": 262.0,
+              "group": "C",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 3,
+              "name": "Вал приводной",
+              "quantity": 120,
+              "setup_time": 12.0,
+              "production_time": 216.0,
+              "total_time": 228.0,
+              "group": "A",
+              "comment": null,
+              "cumulative_time": 296.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 5,
+              "name": "Фланец",
+              "quantity": 95,
+              "setup_time": 22.0,
+              "production_time": 171.0,
+              "total_time": 193.0,
+              "group": "B",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            },
+            {
+              "order": 6,
+              "name": "Переходник",
+              "quantity": 60,
+              "setup_time": 30.0,
+              "production_time": 108.0,
+              "total_time": 138.0,
+              "group": "C",
+              "comment": null,
+              "cumulative_time": 467.0,
+              "status": "excluded",
+              "reason": "Не хватает доступного фонда времени"
+            }
+          ],
+          "used_time": 467.0,
+          "remaining_time": 53.0,
+          "utilization_percent": 89.81,
+          "interpretation": "Сформирована квазиоптимальная производственная программа из 2 позиций. Использовано 467.00 из 520.00 единиц фонда времени, коэффициент использования фонда составляет 89.81%. 4 позиций не включено из-за ограничения фонда времени."
+        },
+        "robotics": {
+          "module": "robotic_links",
+          "links": [
+            {
+              "link_number": 1,
+              "d": 28.57,
+              "robot_load_factor": 0.49,
+              "robot_load_percent": 49.0,
+              "machines_count": 3,
+              "operations": [
+                {
+                  "name": "Операция 5",
+                  "machine": "Шлифовальный станок",
+                  "top": 20.0,
+                  "kz": 0.7,
+                  "service_time": 5.0,
+                  "tau": 28.57,
+                  "A": 1,
+                  "k_fact": 0.7,
+                  "delta": 0.0,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 3",
+                  "machine": "Сверлильный станок",
+                  "top": 18.0,
+                  "kz": 0.6,
+                  "service_time": 4.0,
+                  "tau": 30.0,
+                  "A": 1,
+                  "k_fact": 0.63,
+                  "delta": 0.03,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 1",
+                  "machine": "Токарный станок",
+                  "top": 24.0,
+                  "kz": 0.8,
+                  "service_time": 5.0,
+                  "tau": 30.0,
+                  "A": 1,
+                  "k_fact": 0.84,
+                  "delta": 0.04,
+                  "reason": null
+                }
+              ],
+              "assessment": "Недогрузка робота"
+            },
+            {
+              "link_number": 2,
+              "d": 42.67,
+              "robot_load_factor": 0.3,
+              "robot_load_percent": 30.47,
+              "machines_count": 2,
+              "operations": [
+                {
+                  "name": "Операция 2",
+                  "machine": "Фрезерный центр",
+                  "top": 32.0,
+                  "kz": 0.75,
+                  "service_time": 6.0,
+                  "tau": 42.67,
+                  "A": 1,
+                  "k_fact": 0.75,
+                  "delta": 0.0,
+                  "reason": null
+                },
+                {
+                  "name": "Операция 4",
+                  "machine": "Обрабатывающий центр",
+                  "top": 40.0,
+                  "kz": 0.85,
+                  "service_time": 7.0,
+                  "tau": 47.06,
+                  "A": 1,
+                  "k_fact": 0.9375,
+                  "delta": 0.0875,
+                  "reason": null
+                }
+              ],
+              "assessment": "Недогрузка робота"
+            }
+          ],
+          "unassigned_operations": [],
+          "links_count": 2,
+          "average_robot_load_percent": 39.5,
+          "interpretation": "Сформировано 2 роботизированных звеньев. Средняя загрузка роботов составляет 39.73%."
+        },
+        "risks": {
+          "module": "risk_analysis",
+          "events": [
+            "Срыв поставки",
+            "Рост стоимости оборудования",
+            "Простой участка",
+            "Недостижение плановой загрузки"
+          ],
+          "loss_table": [
+            {
+              "strategy": "S1: страхование",
+              "losses": [
+                162000.0,
+                126000.0,
+                108000.0,
+                144000.0
+              ],
+              "total_loss": 540000.0,
+              "strategy_cost": 520000.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "losses": [
+                108000.0,
+                90000.0,
+                72000.0,
+                108000.0
+              ],
+              "total_loss": 378000.0,
+              "strategy_cost": 740000.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "losses": [
+                90000.0,
+                144000.0,
+                54000.0,
+                90000.0
+              ],
+              "total_loss": 378000.0,
+              "strategy_cost": 630000.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "losses": [
+                72000.0,
+                72000.0,
+                54000.0,
+                72000.0
+              ],
+              "total_loss": 270000.0,
+              "strategy_cost": 880000.0
+            }
+          ],
+          "payoff_table": [
+            {
+              "strategy": "S1: страхование",
+              "Dij": [
+                3908000.0,
+                3944000.0,
+                3962000.0,
+                3926000.0
+              ],
+              "Dminij": 3908000.0,
+              "Dmaxij": 3962000.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "Dij": [
+                3907000.0,
+                3925000.0,
+                3943000.0,
+                3907000.0
+              ],
+              "Dminij": 3907000.0,
+              "Dmaxij": 3943000.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "Dij": [
+                3952500.0,
+                3898500.0,
+                3988500.0,
+                3952500.0
+              ],
+              "Dminij": 3898500.0,
+              "Dmaxij": 3988500.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "Dij": [
+                3908000.0,
+                3908000.0,
+                3926000.0,
+                3908000.0
+              ],
+              "Dminij": 3908000.0,
+              "Dmaxij": 3926000.0
+            }
+          ],
+          "best_payoff_by_event": [
+            3952500.0,
+            3944000.0,
+            3988500.0,
+            3952500.0
+          ],
+          "regret_table": [
+            {
+              "strategy": "S1: страхование",
+              "ERij": [
+                44500.0,
+                0.0,
+                26500.0,
+                26500.0
+              ],
+              "ERmaxij": 44500.0
+            },
+            {
+              "strategy": "S2: резервирование",
+              "ERij": [
+                45500.0,
+                19000.0,
+                45500.0,
+                45500.0
+              ],
+              "ERmaxij": 45500.0
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "ERij": [
+                0.0,
+                45500.0,
+                0.0,
+                0.0
+              ],
+              "ERmaxij": 45500.0
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "ERij": [
+                44500.0,
+                36000.0,
+                62500.0,
+                44500.0
+              ],
+              "ERmaxij": 62500.0
+            }
+          ],
+          "criteria": {
+            "savage_minimax_regret": [
+              "S1: страхование"
+            ],
+            "wald_maximin_pessimism": [
+              "S1: страхование",
+              "S4: комбинированная стратегия"
+            ],
+            "maximax_optimism": [
+              "S3: усиленный контроль"
+            ],
+            "hurwicz": [
+              {
+                "coefficient": 0.3,
+                "best_value": 3961500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.5,
+                "best_value": 3943500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.7,
+                "best_value": 3925500.0,
+                "strategies": [
+                  "S3: усиленный контроль"
+                ]
+              },
+              {
+                "coefficient": 0.8,
+                "best_value": 3918800.0,
+                "strategies": [
+                  "S1: страхование"
+                ]
+              },
+              {
+                "coefficient": 0.9,
+                "best_value": 3913400.0,
+                "strategies": [
+                  "S1: страхование"
+                ]
+              }
+            ],
+            "recommended_strategy": "S1: страхование"
+          },
+          "hurwicz_table": [
+            {
+              "strategy": "S1: страхование",
+              "GHj": [
+                3945800.0,
+                3935000.0,
+                3924200.0,
+                3918800.0,
+                3913400.0
+              ]
+            },
+            {
+              "strategy": "S2: резервирование",
+              "GHj": [
+                3932200.0,
+                3925000.0,
+                3917800.0,
+                3914200.0,
+                3910600.0
+              ]
+            },
+            {
+              "strategy": "S3: усиленный контроль",
+              "GHj": [
+                3961500.0,
+                3943500.0,
+                3925500.0,
+                3916500.0,
+                3907500.0
+              ]
+            },
+            {
+              "strategy": "S4: комбинированная стратегия",
+              "GHj": [
+                3920600.0,
+                3917000.0,
+                3913400.0,
+                3911600.0,
+                3909800.0
+              ]
+            }
+          ],
+          "interpretation": "По критерию Сэвиджа рекомендуется: S1: страхование. По критерию Вальда, то есть по пессимистическому maximin-подходу, рекомендуется: S1: страхование, S4: комбинированная стратегия. Сводная рекомендация системы: стратегия «S1: страхование»."
+        },
+        "economics": {
+          "module": "economics",
+          "initial_investment": 12000000.0,
+          "discount_rate_percent": 18.0,
+          "npv": 2446008.23,
+          "irr_percent": 25.56,
+          "roi_percent": 104.33,
+          "profitability_index": 1.2038,
+          "simple_payback_period_years": 2.93,
+          "discounted_payback_period_years": 4.11,
+          "is_effective": true,
+          "flows": [
+            {
+              "year": 1,
+              "inflow": 4200000.0,
+              "operating_costs": 900000.0,
+              "risk_losses": 240000.0,
+              "maintenance_costs": 180000.0,
+              "additional_investment": 0.0,
+              "net_flow": 2880000.0,
+              "discounted_flow": 2440677.97,
+              "cumulative_simple_flow": -9120000.0,
+              "cumulative_discounted_flow": -9559322.03
+            },
+            {
+              "year": 2,
+              "inflow": 5600000.0,
+              "operating_costs": 1000000.0,
+              "risk_losses": 210000.0,
+              "maintenance_costs": 220000.0,
+              "additional_investment": 0.0,
+              "net_flow": 4170000.0,
+              "discounted_flow": 2994829.07,
+              "cumulative_simple_flow": -4950000.0,
+              "cumulative_discounted_flow": -6564492.96
+            },
+            {
+              "year": 3,
+              "inflow": 6900000.0,
+              "operating_costs": 1150000.0,
+              "risk_losses": 180000.0,
+              "maintenance_costs": 260000.0,
+              "additional_investment": 0.0,
+              "net_flow": 5310000.0,
+              "discounted_flow": 3231829.93,
+              "cumulative_simple_flow": 360000.0,
+              "cumulative_discounted_flow": -3332663.03
+            },
+            {
+              "year": 4,
+              "inflow": 7600000.0,
+              "operating_costs": 1250000.0,
+              "risk_losses": 160000.0,
+              "maintenance_costs": 300000.0,
+              "additional_investment": 0.0,
+              "net_flow": 5890000.0,
+              "discounted_flow": 3037996.47,
+              "cumulative_simple_flow": 6250000.0,
+              "cumulative_discounted_flow": -294666.55
+            },
+            {
+              "year": 5,
+              "inflow": 8100000.0,
+              "operating_costs": 1350000.0,
+              "risk_losses": 150000.0,
+              "maintenance_costs": 330000.0,
+              "additional_investment": 0.0,
+              "net_flow": 6270000.0,
+              "discounted_flow": 2740674.79,
+              "cumulative_simple_flow": 12520000.0,
+              "cumulative_discounted_flow": 2446008.23
+            }
+          ],
+          "sensitivity": {
+            "discount_rate_minus_5pp": 4510042.7,
+            "discount_rate_base": 2446008.23,
+            "discount_rate_plus_5pp": 751705.74,
+            "investment_minus_10_percent": 3646008.23,
+            "investment_plus_10_percent": 1246008.23,
+            "inflow_minus_10_percent": 521879.44,
+            "inflow_plus_10_percent": 4370137.03
+          },
+          "interpretation": "NPV проекта составляет 2446008.23. Следовательно, проект экономически эффективен, так как ЧДД/NPV положителен. Индекс доходности равен 1.2038, ROI составляет 104.33%."
+        }
+      },
+      "summary": {
+        "npv": 2446008.23,
+        "irr_percent": 25.56,
+        "payback": 4.11,
+        "is_effective": true,
+        "recommended_risk_strategy": "S1: страхование",
+        "production_utilization_percent": 89.81,
+        "average_robot_load_percent": 39.5
+      }
+    }
+  }
+]
