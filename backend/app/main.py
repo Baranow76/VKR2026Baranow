@@ -1,10 +1,18 @@
 from __future__ import annotations
 
-import json
-from datetime import datetime
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
 from pathlib import Path
 from typing import Any, Dict
 from uuid import uuid4
+
+import json
+from datetime import datetime
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from .database import Base, engine, get_db
+from .models import Project, ComparisonScenario, CalculationHistory
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,7 +43,7 @@ app = FastAPI(
     description="API модульной информационной системы поддержки инновационной модернизации.",
     version="2.0.0",
 )
-
+Base.metadata.create_all(bind=engine)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -198,3 +206,177 @@ def full_project_calculate(payload: FullProjectRequest):
 
     save_history("full_project", payload.model_dump(), result)
     return result
+
+
+@app.get("/api/projects")
+def get_projects(db: Session = Depends(get_db)):
+    projects = db.query(Project).order_by(Project.updated_at.desc()).all()
+
+    result = []
+    for project in projects:
+        data = json.loads(project.data_json)
+
+        result.append({
+            "id": project.id,
+            "name": project.name,
+            "description": project.description,
+            "data": data,
+            "created_at": project.created_at.isoformat(),
+            "updated_at": project.updated_at.isoformat(),
+            "stats": {
+                "production_items": len(data.get("production", {}).get("items", [])),
+                "robotic_operations": len(data.get("robotics", {}).get("operations", [])),
+                "risk_strategies": len(data.get("risks", {}).get("strategies", [])),
+                "economic_periods": len(data.get("economics", {}).get("periods", [])),
+            }
+        })
+
+    return result
+
+@app.post("/api/projects")
+def create_project(payload: dict, db: Session = Depends(get_db)):
+    name = payload.get("name") or payload.get("data", {}).get("name") or "Проект инновационной модернизации"
+    description = payload.get("description")
+    data = payload.get("data")
+
+    if not data:
+        raise HTTPException(status_code=400, detail="Не переданы данные проекта")
+
+    project = Project(
+        name=name,
+        description=description,
+        data_json=json.dumps(data, ensure_ascii=False),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+    )
+
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+
+    return {
+        "id": project.id,
+        "name": project.name,
+        "description": project.description,
+        "data": json.loads(project.data_json),
+        "created_at": project.created_at.isoformat(),
+        "updated_at": project.updated_at.isoformat(),
+    }
+
+@app.get("/api/projects/{project_id}")
+def get_project(project_id: int, db: Session = Depends(get_db)):
+    project = db.query(Project).filter(Project.id == project_id).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+
+    return {
+        "id": project.id,
+        "name": project.name,
+        "description": project.description,
+        "data": json.loads(project.data_json),
+        "created_at": project.created_at.isoformat(),
+        "updated_at": project.updated_at.isoformat(),
+    }
+
+@app.put("/api/projects/{project_id}")
+def update_project(project_id: int, payload: dict, db: Session = Depends(get_db)):
+    project = db.query(Project).filter(Project.id == project_id).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+
+    data = payload.get("data")
+    name = payload.get("name") or project.name
+    description = payload.get("description", project.description)
+
+    if not data:
+        raise HTTPException(status_code=400, detail="Не переданы данные проекта")
+
+    project.name = name
+    project.description = description
+    project.data_json = json.dumps(data, ensure_ascii=False)
+    project.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(project)
+
+    return {
+        "id": project.id,
+        "name": project.name,
+        "description": project.description,
+        "data": json.loads(project.data_json),
+        "created_at": project.created_at.isoformat(),
+        "updated_at": project.updated_at.isoformat(),
+    }
+
+@app.delete("/api/projects/{project_id}")
+def delete_project(project_id: int, db: Session = Depends(get_db)):
+    project = db.query(Project).filter(Project.id == project_id).first()
+
+    if not project:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+
+    db.delete(project)
+    db.commit()
+
+    return {"status": "deleted", "id": project_id}
+
+@app.get("/api/comparison-scenarios")
+def get_comparison_scenarios(db: Session = Depends(get_db)):
+    scenarios = db.query(ComparisonScenario).order_by(ComparisonScenario.created_at.desc()).all()
+
+    return [
+        {
+            "id": item.id,
+            "project_id": item.project_id,
+            "name": item.name,
+            "source_data": json.loads(item.source_data_json),
+            "result": json.loads(item.result_json),
+            "created_at": item.created_at.isoformat(),
+        }
+        for item in scenarios
+    ]
+
+@app.post("/api/comparison-scenarios")
+def create_comparison_scenario(payload: dict, db: Session = Depends(get_db)):
+    name = payload.get("name") or "Сценарий модернизации"
+    project_id = payload.get("project_id")
+    source_data = payload.get("source_data")
+    result = payload.get("result")
+
+    if not source_data or not result:
+        raise HTTPException(status_code=400, detail="Не переданы данные сценария")
+
+    scenario = ComparisonScenario(
+        project_id=project_id,
+        name=name,
+        source_data_json=json.dumps(source_data, ensure_ascii=False),
+        result_json=json.dumps(result, ensure_ascii=False),
+        created_at=datetime.utcnow(),
+    )
+
+    db.add(scenario)
+    db.commit()
+    db.refresh(scenario)
+
+    return {
+        "id": scenario.id,
+        "project_id": scenario.project_id,
+        "name": scenario.name,
+        "source_data": json.loads(scenario.source_data_json),
+        "result": json.loads(scenario.result_json),
+        "created_at": scenario.created_at.isoformat(),
+    }
+
+@app.delete("/api/comparison-scenarios/{scenario_id}")
+def delete_comparison_scenario(scenario_id: int, db: Session = Depends(get_db)):
+    scenario = db.query(ComparisonScenario).filter(ComparisonScenario.id == scenario_id).first()
+
+    if not scenario:
+        raise HTTPException(status_code=404, detail="Сценарий не найден")
+
+    db.delete(scenario)
+    db.commit()
+
+    return {"status": "deleted", "id": scenario_id}
