@@ -1,0 +1,440 @@
+/* AI-командная панель в редакторах модулей.
+   Базовые элементы (.nlu-*) переиспользуются из глобального styles.css. */
+
+.aicmd-wrap {
+  border-radius: 22px;
+  overflow: hidden;
+  margin-bottom: 18px;
+  border: 1px solid rgba(255, 119, 87, 0.22);
+  position: relative;
+}
+
+.aicmd-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(255, 119, 87, 0.5), rgba(139, 92, 246, 0.4), rgba(79, 172, 254, 0.4));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.aicmd-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.aicmd-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.aicmd-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, #ff7757, #ff4fd8);
+  flex: 0 0 auto;
+}
+
+.aicmd-toggle-left strong { display: block; font-size: 16px; }
+.aicmd-subtitle { display: block; font-size: 13px; opacity: 0.65; margin-top: 2px; max-width: 560px; }
+
+.aicmd-chev { transition: transform 0.35s ease; opacity: 0.6; flex: 0 0 auto; }
+.aicmd-chev.open { transform: rotate(180deg); }
+
+.aicmd-body { overflow: hidden; }
+.aicmd-inner { padding: 16px 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+
+.aicmd-textarea { min-height: 76px; }
+
+.aicmd-thinking { display: flex; align-items: center; gap: 16px; padding: 10px 0; }
+
+.aicmd-section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 15px; margin-bottom: 4px;
+}
+.aicmd-section-title > svg { color: #ff7757; }
+
+.aicmd-recognized { display: flex; flex-direction: column; gap: 14px; }
+.aicmd-preview { display: flex; flex-direction: column; gap: 10px; }
+.aicmd-preview-title { font-weight: 600; font-size: 14px; opacity: 0.8; }
+
+.aicmd-success {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 16px;
+  border: 1px solid rgba(15, 159, 104, 0.4); background: rgba(15, 159, 104, 0.07);
+}
+.aicmd-success strong { font-size: 15px; }
+.aicmd-success p { margin: 2px 0 0; opacity: 0.85; font-size: 14px; }
+
+.aicmd-data { display: flex; flex-direction: column; gap: 8px; }
+
+/* Блок найденных записей (show_items) */
+.aicmd-found { display: flex; flex-direction: column; gap: 10px; }
+.aicmd-found-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.aicmd-found-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(79, 172, 254, 0.12);
+  border: 1px solid rgba(79, 172, 254, 0.35);
+  color: #2f8fe0;
+}
+
+/* Редактируемый preview */
+.aicmd-preview-hint { font-size: 12px; opacity: 0.6; margin-bottom: 4px; }
+
+.aicmd-value-input {
+  width: 110px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 159, 104, 0.4);
+  background: rgba(15, 159, 104, 0.06);
+  font-weight: 700;
+  color: #0f9f68;
+  font-family: inherit;
+}
+.aicmd-value-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(15, 159, 104, 0.25); }
+.aicmd-value-input:disabled { opacity: 0.4; }
+
+.nlu-preview-row.excluded { opacity: 0.4; }
+.nlu-preview-row.excluded .nlu-new-value { text-decoration: line-through; }
+.nlu-copy-card.excluded { opacity: 0.4; }
+.nlu-copy-card input[type='checkbox'],
+.nlu-preview-row input[type='checkbox'] { width: 16px; height: 16px; cursor: pointer; accent-color: #ff7757; }
+
+/* --- Подсветка AI-изменений --- */
+.ai-row-changed { animation: aiRowGlow 5s ease forwards; }
+.ai-row-created { animation: aiRowGlowCreated 5s ease forwards; }
+
+@keyframes aiRowGlow {
+  0% { background: rgba(255, 119, 87, 0.22); }
+  70% { background: rgba(255, 119, 87, 0.12); }
+  100% { background: transparent; }
+}
+@keyframes aiRowGlowCreated {
+  0% { background: rgba(15, 159, 104, 0.22); }
+  70% { background: rgba(15, 159, 104, 0.12); }
+  100% { background: transparent; }
+}
+
+.ai-cell-changed {
+  position: relative;
+  font-weight: 700;
+  background: linear-gradient(120deg, rgba(255, 119, 87, 0.18), rgba(139, 92, 246, 0.16));
+  border-radius: 8px;
+  animation: aiCellFade 5s ease forwards;
+}
+@keyframes aiCellFade {
+  0% { box-shadow: 0 0 0 2px rgba(255, 119, 87, 0.35) inset; }
+  100% { box-shadow: none; background: transparent; font-weight: 400; }
+}
+
+.ai-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  cursor: help;
+  animation: aiBadgeIn 0.4s ease;
+}
+.ai-badge.updated { color: #ff7757; background: rgba(255, 119, 87, 0.16); }
+.ai-badge.created { color: #0f9f68; background: rgba(15, 159, 104, 0.16); }
+
+@keyframes aiBadgeIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+[data-theme='dark'] .aicmd-subtitle { opacity: 0.75; }
+
+/* ===================================================================== */
+/*  Премиальная анимация распознавания (AI recognition)                  */
+/* ===================================================================== */
+
+.aicmd-analyze {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 22px 24px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 18px 50px rgba(20, 20, 35, 0.12);
+  isolation: isolate;
+}
+
+/* Движущееся «авро­ра»-свечение на фоне */
+.aicmd-aurora {
+  position: absolute;
+  inset: -50%;
+  z-index: -2;
+  background:
+    radial-gradient(40% 50% at 25% 30%, rgba(255, 119, 87, 0.45), transparent 60%),
+    radial-gradient(45% 55% at 75% 25%, rgba(139, 92, 246, 0.40), transparent 60%),
+    radial-gradient(50% 60% at 55% 80%, rgba(79, 172, 254, 0.38), transparent 60%),
+    radial-gradient(40% 50% at 15% 75%, rgba(255, 79, 216, 0.30), transparent 60%);
+  filter: blur(42px);
+  animation: aicmdAurora 7s ease-in-out infinite alternate;
+}
+
+@keyframes aicmdAurora {
+  0%   { transform: translate3d(-6%, -4%, 0) rotate(0deg) scale(1); }
+  50%  { transform: translate3d(4%, 3%, 0) rotate(8deg) scale(1.12); }
+  100% { transform: translate3d(7%, -3%, 0) rotate(-6deg) scale(1.05); }
+}
+
+/* Световой скан-луч, проходящий сверху вниз */
+.aicmd-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 38%;
+  z-index: -1;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  filter: blur(6px);
+  animation: aicmdScan 2.1s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes aicmdScan {
+  0%   { transform: translateY(-120%); opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(320%); opacity: 0; }
+}
+
+.aicmd-analyze-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+/* Пульсирующее «нейро-ядро» с расходящимися кольцами */
+.aicmd-orb {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: conic-gradient(from 0deg, #ff7757, #ff4fd8, #8b5cf6, #4facfe, #ff7757);
+  box-shadow: 0 0 24px rgba(255, 119, 87, 0.5);
+  animation: aicmdSpin 4s linear infinite;
+}
+
+.aicmd-orb > svg {
+  animation: aicmdSpinReverse 4s linear infinite;  /* иконка стоит ровно */
+}
+
+.aicmd-orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 119, 87, 0.5);
+  animation: aicmdPing 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.aicmd-orb-ring.delay { animation-delay: 0.9s; }
+
+@keyframes aicmdSpin { to { transform: rotate(360deg); } }
+@keyframes aicmdSpinReverse { to { transform: rotate(-360deg); } }
+@keyframes aicmdPing {
+  0%   { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.1); opacity: 0; }
+}
+
+.aicmd-analyze-title strong { display: block; font-size: 16px; letter-spacing: -0.2px; }
+.aicmd-analyze-title span { font-size: 13px; opacity: 0.7; }
+
+/* Поэтапный список распознавания */
+.aicmd-stages { display: flex; flex-direction: column; gap: 10px; }
+
+.aicmd-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: background 0.4s ease, opacity 0.4s ease;
+}
+
+.aicmd-stage.active {
+  background: rgba(255, 119, 87, 0.10);
+  border: 1px solid rgba(255, 119, 87, 0.25);
+}
+.aicmd-stage.done { opacity: 0.85; }
+
+.aicmd-stage-icon {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+.aicmd-stage.done .aicmd-stage-icon { color: #0f9f68; }
+.aicmd-stage.active .aicmd-stage-icon { color: #ff7757; }
+
+.aicmd-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.aicmd-stage-label { font-size: 14px; font-weight: 600; }
+.aicmd-stage.done .aicmd-stage-label { font-weight: 500; }
+
+/* Бегущий блик по активной строке */
+.aicmd-stage-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.55) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: aicmdShimmerMove 1.3s ease-in-out infinite;
+}
+
+@keyframes aicmdShimmerMove {
+  to { transform: translateX(100%); }
+}
+
+[data-theme='dark'] .aicmd-analyze { background: rgba(28, 28, 40, 0.55); }
+[data-theme='dark'] .aicmd-dot { background: rgba(255, 255, 255, 0.25); }
+
+/* ===================================================================== */
+/*  Компактная анимация распознавания вокруг кнопки                      */
+/* ===================================================================== */
+
+/* Кнопка распознавания: стабильный layout, без rotate/translate за пределы. */
+.aicmd-btn-wrap {
+  position: relative;
+  display: inline-block;
+  border-radius: 14px;
+  padding: 2px;
+  vertical-align: middle;
+}
+
+/* Анимированная градиентная рамка БЕГУЩИМ градиентом (без вращения). */
+.aicmd-btn-wrap.analyzing {
+  background: linear-gradient(90deg, #ff7757, #ff4fd8, #8b5cf6, #4facfe, #ff7757);
+  background-size: 300% 100%;
+  animation: aicmdBorderFlow 3s linear infinite;
+  box-shadow: 0 0 20px rgba(255, 119, 87, 0.4);
+}
+
+@keyframes aicmdBorderFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Кнопка фиксированного размера — контейнер не меняет габариты при загрузке. */
+.aicmd-recognize {
+  position: relative;
+  overflow: hidden;
+  width: 270px;
+  justify-content: center;
+}
+
+.aicmd-btn-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Бегущий блик ВНУТРИ кнопки (overflow:hidden ограничивает; pointer-events:none). */
+.aicmd-btn-wrap.analyzing .aicmd-recognize::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: aicmdShine 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes aicmdShine { to { transform: translateX(100%); } }
+
+/* Пульсация значка — только прозрачность, без scale (layout стабилен). */
+.aicmd-brain-pulse { animation: aicmdGlowPulse 1.1s ease-in-out infinite; }
+@keyframes aicmdGlowPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* Мини-прогресс этапов (точки) под кнопкой. */
+.aicmd-mini-progress { display: inline-flex; align-items: center; gap: 6px; }
+.aicmd-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.14);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.aicmd-pip.active {
+  background: #ff7757;
+  box-shadow: 0 0 8px rgba(255, 119, 87, 0.6);
+  animation: aicmdGlowPulse 1s ease-in-out infinite;
+}
+.aicmd-pip.done { background: #0f9f68; }
+
+[data-theme='dark'] .aicmd-pip { background: rgba(255, 255, 255, 0.18); }
+
+@media (prefers-reduced-motion: reduce) {
+  .aicmd-chev,
+  .ai-row-changed, .ai-row-created, .ai-cell-changed, .ai-badge,
+  .aicmd-btn-wrap.analyzing, .aicmd-brain-pulse, .aicmd-pip.active {
+    animation: none !important;
+    transition: none !important;
+  }
+  .aicmd-btn-wrap.analyzing .aicmd-recognize::after { display: none; }
+}
+
+/* ===== FIX: AiCommandPanel dark theme header text ===== */
+
+:root[data-theme="dark"] .aicmd-toggle {
+  color: var(--text) !important;
+}
+
+:root[data-theme="dark"] .aicmd-toggle-left,
+:root[data-theme="dark"] .aicmd-toggle-left > span,
+:root[data-theme="dark"] .aicmd-toggle-left strong {
+  color: rgba(246, 243, 239, 0.96) !important;
+}
+
+:root[data-theme="dark"] .aicmd-subtitle {
+  color: rgba(246, 243, 239, 0.62) !important;
+}
+
+:root[data-theme="dark"] .aicmd-chev {
+  color: rgba(246, 243, 239, 0.68) !important;
+}
+
+/* Иконка слева остается белой на розовом фоне */
+:root[data-theme="dark"] .aicmd-icon,
+:root[data-theme="dark"] .aicmd-icon svg {
+  color: #ffffff !important;
+}

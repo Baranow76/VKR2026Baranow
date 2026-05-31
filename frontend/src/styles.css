@@ -369,11 +369,110 @@ textarea.json-box.tall {
 .menu {
   display: grid;
   gap: 8px;
+  /* Меню — гибкая зона прокрутки: занимает свободное место и скроллится,
+     вместо хрупкого фиксированного max-height (нижняя карточка не обрезается). */
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  max-height: calc(100vh - 360px);
+  overflow-x: hidden;
   padding-right: 4px;
+  margin-right: -4px;
   position: relative;
   z-index: 2;
+  scrollbar-width: thin;
+}
+
+.menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+}
+
+/* =======================================================================
+   ТЁМНАЯ ТЕМА для ИИ-страниц: «Прогноз отказов» (.ai-*) и
+   «ИИ-редактор данных» (.nlu-*). Светлые (white) поверхности заменяются
+   полупрозрачными тёмными, бордеры — светлыми. Акцентные цвета (оранжевый,
+   зелёный, фиолетовый) и градиенты сохраняются — они читаются в обеих темах.
+   ======================================================================= */
+
+/* --- Поверхности-«стекло»: чипы, карточки, баннеры --- */
+[data-theme="dark"] .nlu-chip,
+[data-theme="dark"] .nlu-example-chip,
+[data-theme="dark"] .nlu-assign-chip,
+[data-theme="dark"] .nlu-source-card,
+[data-theme="dark"] .nlu-copy-card,
+[data-theme="dark"] .nlu-success-card,
+[data-theme="dark"] .nlu-probability-banner,
+[data-theme="dark"] .ai-chip,
+[data-theme="dark"] .ai-model-card,
+[data-theme="dark"] .ai-probability-banner,
+[data-theme="dark"] .ai-integration-note,
+[data-theme="dark"] .ai-warning-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .ai-model-card {
+  border: 1px solid var(--line);
+}
+
+/* --- Поле ввода команды --- */
+[data-theme="dark"] .nlu-textarea {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--line);
+  color: var(--text);
+}
+[data-theme="dark"] .nlu-textarea::placeholder {
+  color: var(--muted-2);
+}
+
+/* --- Степпер этапов NLU --- */
+[data-theme="dark"] .nlu-stepper {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--line);
+}
+[data-theme="dark"] .nlu-step-dot,
+[data-theme="dark"] .nlu-pip {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* --- Hero-блок редактора --- */
+[data-theme="dark"] .nlu-hero {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--line);
+}
+
+/* --- Строки таблиц preview / данных модуля --- */
+[data-theme="dark"] .nlu-data-row:hover,
+[data-theme="dark"] .nlu-preview-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Скелетон ожидания --- */
+[data-theme="dark"] .nlu-skeleton {
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.12) 37%,
+    rgba(255, 255, 255, 0.06) 63%);
+}
+
+/* --- Чип «ожидание обучения» (AI прогноз отказов) --- */
+[data-theme="dark"] .ai-status-chip.pending {
+  background: rgba(255, 119, 87, 0.18);
+}
+
+/* --- Текстовые акценты внутри чипов: значение читаемо на тёмном --- */
+[data-theme="dark"] .nlu-chip-val,
+[data-theme="dark"] .ai-chip-value {
+  color: var(--text);
+}
+
+/* --- Стрелки/иконки переходов в preview --- */
+[data-theme="dark"] .nlu-arrow {
+  color: var(--muted);
 }
 
 .nav-button,
@@ -5381,3 +5480,1088 @@ button.danger-button:hover {
     flex: 0 0 auto;
   }
 }
+
+/* --- ИИ-модуль: прогнозирование отказов оборудования --- */
+
+.ai-module-lead {
+  margin: 0 0 6px;
+  line-height: 1.6;
+  opacity: 0.92;
+}
+
+.ai-train-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ai-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ai-status-chip.ready {
+  background: rgba(15, 159, 104, 0.14);
+  color: #0f9f68;
+}
+
+.ai-status-chip.pending {
+  background: rgba(255, 119, 87, 0.14);
+  color: #ff7757;
+}
+
+.ai-hint-text {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.ai-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.ai-model-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.ai-model-card.best {
+  border-color: #ff7757;
+  box-shadow: 0 8px 28px rgba(255, 119, 87, 0.18);
+}
+
+.ai-model-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ai-best-badge {
+  background: #ff7757;
+  color: #fff;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ai-probability-banner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 26px;
+  border-radius: 22px;
+  flex-wrap: wrap;
+}
+
+.ai-probability-value {
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.ai-probability-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-risk-badge {
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  width: fit-content;
+}
+
+.ai-risk-sub {
+  font-size: 14px;
+  opacity: 0.78;
+}
+
+.ai-integration-note {
+  display: flex;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border-left: 4px solid #ff7757;
+}
+
+.ai-integration-note p {
+  margin: 4px 0 0;
+  line-height: 1.55;
+  opacity: 0.9;
+}
+
+/* --- Предупреждение о выходе за область применимости модели --- */
+
+.ai-ood-alert {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px 22px;
+  border-radius: 20px;
+  background: rgba(226, 61, 61, 0.1);
+  border: 1.5px solid rgba(226, 61, 61, 0.5);
+  color: #e23d3d;
+}
+
+.ai-ood-alert strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.ai-ood-alert p {
+  margin: 0;
+  line-height: 1.55;
+  color: inherit;
+  opacity: 0.92;
+}
+
+.ai-warnings-list {
+  display: grid;
+  gap: 12px;
+}
+
+.ai-warning-item {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(226, 61, 61, 0.06);
+  border-left: 4px solid #e23d3d;
+}
+
+.ai-warning-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.ai-warning-param {
+  font-weight: 700;
+}
+
+.ai-warning-type {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #e23d3d;
+  background: rgba(226, 61, 61, 0.14);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.ai-warning-body {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.ai-warning-msg {
+  margin: 8px 0 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+/* =========================================================================
+   ИИ-редактор данных (NLU) — премиальный UI в духе AI-интерфейсов
+   ========================================================================= */
+
+.nlu-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* --- Hero --- */
+.nlu-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: 30px 32px;
+  isolation: isolate;
+}
+
+.nlu-hero-glow {
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 320px;
+  background:
+    radial-gradient(60% 80% at 20% 20%, rgba(255, 119, 87, 0.28), transparent 60%),
+    radial-gradient(50% 70% at 80% 10%, rgba(139, 92, 246, 0.22), transparent 60%),
+    radial-gradient(60% 90% at 60% 80%, rgba(79, 172, 254, 0.18), transparent 60%);
+  filter: blur(36px);
+  z-index: -1;
+  animation: nluGlowDrift 12s ease-in-out infinite alternate;
+}
+
+@keyframes nluGlowDrift {
+  0% { transform: translate3d(-4%, -3%, 0) scale(1); }
+  100% { transform: translate3d(5%, 4%, 0) scale(1.08); }
+}
+
+.nlu-hero-content { position: relative; }
+
+.nlu-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff7757;
+  background: rgba(255, 119, 87, 0.12);
+  border: 1px solid rgba(255, 119, 87, 0.28);
+  margin-bottom: 14px;
+}
+
+.nlu-hero h2 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  letter-spacing: -0.5px;
+}
+
+.nlu-hero p {
+  margin: 0 0 18px;
+  max-width: 640px;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+
+.nlu-train-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* --- Контекст редактора: активный проект + выбор модуля --- */
+.nlu-context-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 14px 0 18px;
+}
+
+.nlu-context-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 13px;
+}
+
+.nlu-context-chip strong { font-weight: 700; }
+
+.nlu-module-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.nlu-module-select select {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* --- Stepper --- */
+.nlu-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  flex-wrap: wrap;
+}
+
+.nlu-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.45;
+  transition: opacity 0.4s ease;
+}
+
+.nlu-step.active { opacity: 1; }
+
+.nlu-step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1.5px solid transparent;
+  transition: all 0.4s ease;
+}
+
+.nlu-step.active .nlu-step-dot {
+  background: linear-gradient(135deg, #ff7757, #ff4fd8);
+  color: #fff;
+}
+
+.nlu-step.current .nlu-step-dot {
+  box-shadow: 0 0 0 5px rgba(255, 119, 87, 0.18);
+}
+
+.nlu-step-label { font-size: 14px; font-weight: 600; }
+
+.nlu-step-line {
+  width: 34px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 0 4px;
+}
+
+.nlu-step.active .nlu-step-line { background: rgba(255, 119, 87, 0.5); }
+
+/* --- Карточки --- */
+.nlu-card {
+  border-radius: 24px;
+  padding: 24px 26px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 18px 50px rgba(20, 20, 30, 0.08);
+}
+
+.nlu-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.nlu-card-head h3 { margin: 0; font-size: 19px; }
+.nlu-card-head h4 { margin: 0; }
+.nlu-card-head > svg { color: #ff7757; }
+.nlu-card-head .nlu-reset-btn { margin-left: auto; }
+
+/* --- Textarea c focus glow --- */
+.nlu-textarea-wrap {
+  position: relative;
+  border-radius: 22px;
+}
+
+/* Деликатное свечение-ореол ПОЗАДИ поля (не рамка) — без эффекта «рамка в рамке». */
+.nlu-textarea-glow {
+  position: absolute;
+  inset: -3px;
+  border-radius: 24px;
+  z-index: -1;
+  background: linear-gradient(120deg, #ff7757, #ff4fd8, #8b5cf6, #4facfe, #ff7757);
+  background-size: 300% 300%;
+  filter: blur(9px);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+
+.nlu-textarea-wrap.focused .nlu-textarea-glow {
+  opacity: 0.22;
+  animation: nluGlowFlow 9s linear infinite;
+}
+
+@keyframes nluGlowFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Единственная рамка поля. */
+.nlu-textarea {
+  position: relative;
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  border-radius: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 16px 18px;
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: inherit;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* При фокусе — один эффект: подсветка рамки + мягкая тень, без вложенной обводки. */
+.nlu-textarea-wrap.focused .nlu-textarea {
+  border-color: rgba(255, 119, 87, 0.40);
+  box-shadow: 0 6px 18px rgba(255, 119, 87, 0.10);
+}
+
+.nlu-textarea:focus { outline: none; }
+
+/* --- Примеры команд --- */
+.nlu-examples { margin-top: 16px; }
+.nlu-examples-label { font-size: 13px; opacity: 0.6; }
+
+.nlu-examples-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.nlu-example-chip {
+  font-size: 13px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.nlu-example-chip:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 119, 87, 0.45);
+  box-shadow: 0 6px 18px rgba(255, 119, 87, 0.14);
+}
+
+.nlu-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.nlu-recognize-btn,
+.nlu-apply-btn,
+.nlu-btn-shine { position: relative; overflow: hidden; }
+
+.nlu-recognize-btn:hover:not(:disabled),
+.nlu-apply-btn:hover:not(:disabled) { transform: translateY(-2px); }
+
+.nlu-recognize-btn:active:not(:disabled),
+.nlu-apply-btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+
+.nlu-btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(110deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transition: left 0.6s ease;
+}
+
+.nlu-btn-shine:hover::after { left: 140%; }
+
+/* --- AI-thinking + skeleton --- */
+.nlu-thinking {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.nlu-thinking-orb {
+  display: flex;
+  gap: 6px;
+}
+
+.nlu-thinking-orb span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff7757, #ff4fd8);
+  animation: nluPulse 1.2s ease-in-out infinite;
+}
+
+.nlu-thinking-orb span:nth-child(2) { animation-delay: 0.18s; }
+.nlu-thinking-orb span:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes nluPulse {
+  0%, 100% { transform: scale(0.7); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.nlu-skeleton-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.nlu-skeleton {
+  height: 14px;
+  width: 160px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.12) 37%, rgba(0,0,0,0.06) 63%);
+  background-size: 400% 100%;
+  animation: nluShimmer 1.4s ease infinite;
+}
+
+.nlu-skeleton.short { width: 90px; }
+
+@keyframes nluShimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+
+/* --- Chips распознанных сущностей --- */
+.nlu-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nlu-chip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  backdrop-filter: blur(6px);
+}
+
+.nlu-chip-key {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  opacity: 0.55;
+}
+
+.nlu-chip-val { font-size: 15px; font-weight: 700; }
+
+.nlu-chip-conf.tier-high {
+  background: rgba(15, 159, 104, 0.12);
+  border-color: rgba(15, 159, 104, 0.4);
+}
+.nlu-chip-conf.tier-high .nlu-chip-val { color: #0f9f68; }
+
+.nlu-chip-conf.tier-medium {
+  background: rgba(216, 162, 0, 0.12);
+  border-color: rgba(216, 162, 0, 0.4);
+}
+.nlu-chip-conf.tier-medium .nlu-chip-val { color: #b07d00; }
+
+.nlu-chip-conf.tier-low {
+  background: rgba(226, 61, 61, 0.12);
+  border-color: rgba(226, 61, 61, 0.45);
+}
+.nlu-chip-conf.tier-low .nlu-chip-val { color: #e23d3d; }
+
+/* --- Алерты --- */
+.nlu-alert {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.nlu-alert.warn { background: rgba(216, 162, 0, 0.1); color: #8a6500; border: 1px solid rgba(216, 162, 0, 0.3); }
+.nlu-alert.error { background: rgba(226, 61, 61, 0.1); color: #e23d3d; border: 1px solid rgba(226, 61, 61, 0.35); }
+.nlu-alert.confirm { background: rgba(139, 92, 246, 0.1); color: #6d4fd8; border: 1px solid rgba(139, 92, 246, 0.35); }
+
+/* --- Preview --- */
+.nlu-preview { margin-top: 20px; }
+
+.nlu-preview-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.nlu-preview-head h4 { margin: 0; font-size: 16px; }
+
+.nlu-preview-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff7757;
+  background: rgba(255, 119, 87, 0.14);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.nlu-preview-row { transition: background 0.25s ease, transform 0.25s ease; }
+.nlu-preview-row:hover { background: rgba(255, 119, 87, 0.06); }
+
+.nlu-arrow { text-align: center; color: #ff7757; }
+.nlu-new-value { font-weight: 700; color: #0f9f68; }
+
+.nlu-apply-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+/* --- Success --- */
+.nlu-success-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid rgba(15, 159, 104, 0.4);
+  background: rgba(15, 159, 104, 0.06);
+}
+
+.nlu-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, #0f9f68, #16c98a);
+  animation: nluPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes nluPop {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+.nlu-success-card strong { font-size: 17px; }
+.nlu-success-card p { margin: 4px 0; opacity: 0.85; }
+.nlu-success-sub { font-size: 13px; opacity: 0.6; }
+
+.nlu-data-row { transition: background 0.2s ease; }
+.nlu-data-row:hover { background: rgba(0, 0, 0, 0.03); }
+
+/* Заголовок режима редактирования и ячейка имени с AI-бейджем */
+.module-editor-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+}
+
+.ai-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-name-cell input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- Назначения объект→значение (multi_set) --- */
+.nlu-assign-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.nlu-assign-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #6d4fd8;
+}
+
+.nlu-assign-chip b { font-weight: 700; }
+
+/* --- Источник и копии (copy_items) --- */
+.nlu-source-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(79, 172, 254, 0.35);
+  background: rgba(79, 172, 254, 0.08);
+}
+
+.nlu-source-card > svg { color: #2f8fe0; }
+.nlu-source-label { display: block; font-size: 12px; opacity: 0.6; }
+.nlu-source-card strong { font-size: 16px; }
+
+.nlu-copy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.nlu-copy-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  border: 1px solid rgba(15, 159, 104, 0.3);
+  background: rgba(15, 159, 104, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.nlu-copy-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 159, 104, 0.16);
+}
+
+.nlu-copy-card > svg { color: #0f9f68; }
+
+/* --- Тёмная тема --- */
+[data-theme='dark'] .nlu-textarea { background: rgba(30, 30, 40, 0.6); color: #f0f0f5; }
+[data-theme='dark'] .nlu-chip,
+[data-theme='dark'] .nlu-example-chip { background: rgba(255, 255, 255, 0.06); }
+[data-theme='dark'] .nlu-step-dot { background: rgba(255, 255, 255, 0.1); }
+
+/* --- Доступность: уважение к prefers-reduced-motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .nlu-hero-glow,
+  .nlu-textarea-wrap.focused .nlu-textarea-glow,
+  .nlu-thinking-orb span,
+  .nlu-skeleton,
+  .nlu-success-icon,
+  .nlu-btn-shine::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .nlu-recognize-btn:hover,
+  .nlu-apply-btn:hover,
+  .nlu-example-chip:hover {
+    transform: none !important;
+  }
+}
+
+/* =======================================================================
+   СИСТЕМНЫЕ ДОРАБОТКИ (в конце файла — переопределяют ранние правила,
+   структура и логика не меняются).
+   ======================================================================= */
+
+/* 1. Боковое меню: фиксированные блоки не сжимаются, всё помещается внутри,
+   длинный список пунктов аккуратно скроллится в .menu (см. выше). */
+.liquid-sidebar > .brand-block,
+.liquid-sidebar > .theme-toggle,
+.liquid-sidebar > .auth-user-block,
+.liquid-sidebar > .sidebar-card {
+  flex: 0 0 auto;
+}
+/* Блок профиля/выхода: длинный email переносится, не растягивая меню. */
+.sidebar .auth-user-block {
+  max-width: 100%;
+}
+.sidebar .auth-user-email {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+/* Кликабельный блок пользователя → переход в профиль. */
+.auth-user-open {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0 0 8px;
+  cursor: pointer;
+  color: inherit;
+}
+.auth-user-open .auth-user-email { font-weight: 700; }
+.auth-user-open:hover .auth-user-email { color: var(--orange); }
+
+/* 2. Доступность: единое состояние фокуса с клавиатуры.
+   :where(...) — нулевая специфичность, не перебивает стили компонентов. */
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* 3. Таблицы: плавный горизонтальный скролл на сенсорных экранах. */
+.table-shell {
+  -webkit-overflow-scrolling: touch;
+}
+
+
+
+/* ===== FIX: оставить прежнее свечение sidebar, но обрезать его внутри скругления ===== */
+
+.liquid-sidebar {
+  overflow: hidden !important;
+  border-radius: 34px !important;
+  clip-path: inset(0 round 34px);
+  isolation: isolate;
+}
+
+/* Возвращаем старое свечение почти 1 в 1, но оно теперь режется по форме блока */
+.liquid-sidebar::before {
+  content: "";
+  position: absolute;
+
+  top: -80px !important;
+  right: -90px !important;
+  width: 240px !important;
+  height: 240px !important;
+
+  background: linear-gradient(135deg, var(--orange), var(--pink)) !important;
+  opacity: 0.16 !important;
+  filter: blur(18px) !important;
+  border-radius: 999px !important;
+
+  transform: none !important;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Контент поверх свечения */
+.liquid-sidebar > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Если у glass есть внешняя тень, оставляем её мягкой, но не агрессивной */
+.sidebar.glass.liquid-sidebar,
+.liquid-sidebar.glass {
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.08) !important;
+}
+
+
+
+/* ===== FIX: dark theme for embedded NLU editor inside calculation modules ===== */
+
+/* Сам контейнер ИИ-редактора внутри модулей */
+:root[data-theme="dark"] .module-input-panel .nlu-card,
+:root[data-theme="dark"] .section-card .nlu-card,
+:root[data-theme="dark"] .nlu-card {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text) !important;
+}
+
+/* Заголовки и обычный текст внутри ИИ-редактора */
+:root[data-theme="dark"] .nlu-card h1,
+:root[data-theme="dark"] .nlu-card h2,
+:root[data-theme="dark"] .nlu-card h3,
+:root[data-theme="dark"] .nlu-card h4,
+:root[data-theme="dark"] .nlu-card strong,
+:root[data-theme="dark"] .nlu-card .nlu-card-head,
+:root[data-theme="dark"] .nlu-card .nlu-card-head h3,
+:root[data-theme="dark"] .nlu-card .nlu-card-head h4 {
+  color: rgba(246, 243, 239, 0.96) !important;
+}
+
+/* Описание под заголовком */
+:root[data-theme="dark"] .nlu-card p,
+:root[data-theme="dark"] .nlu-card span,
+:root[data-theme="dark"] .nlu-examples-label {
+  color: rgba(246, 243, 239, 0.68) !important;
+}
+
+/* Иконка в заголовке */
+:root[data-theme="dark"] .nlu-card-head > svg {
+  color: var(--orange) !important;
+}
+
+/* Textarea встроенного ИИ-редактора */
+:root[data-theme="dark"] .nlu-textarea,
+:root[data-theme="dark"] .module-input-panel .nlu-textarea,
+:root[data-theme="dark"] textarea.nlu-textarea {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(246, 243, 239, 0.94) !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="dark"] .nlu-textarea::placeholder,
+:root[data-theme="dark"] textarea.nlu-textarea::placeholder {
+  color: rgba(246, 243, 239, 0.44) !important;
+}
+
+/* Обводка textarea при фокусе */
+:root[data-theme="dark"] .nlu-textarea-wrap.focused .nlu-textarea,
+:root[data-theme="dark"] .nlu-textarea:focus {
+  border-color: rgba(255, 138, 92, 0.42) !important;
+  box-shadow: 0 0 0 4px rgba(255, 138, 92, 0.08) !important;
+}
+
+/* Чипы примеров команд внутри всех модулей */
+:root[data-theme="dark"] .nlu-example-chip,
+:root[data-theme="dark"] button.nlu-example-chip,
+:root[data-theme="dark"] .nlu-examples-chips .nlu-example-chip {
+  color: rgba(246, 243, 239, 0.84) !important;
+  background: rgba(255, 255, 255, 0.075) !important;
+  border-color: rgba(255, 255, 255, 0.13) !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="dark"] .nlu-example-chip:hover,
+:root[data-theme="dark"] button.nlu-example-chip:hover {
+  color: #ffffff !important;
+  background: rgba(255, 119, 87, 0.16) !important;
+  border-color: rgba(255, 119, 87, 0.38) !important;
+  box-shadow: 0 8px 24px rgba(255, 119, 87, 0.12) !important;
+}
+
+/* Если внутри чипов есть вложенные span */
+:root[data-theme="dark"] .nlu-example-chip *,
+:root[data-theme="dark"] .nlu-examples-chips .nlu-example-chip * {
+  color: inherit !important;
+}
+
+/* Кнопка распознавания */
+:root[data-theme="dark"] .nlu-recognize-btn,
+:root[data-theme="dark"] .nlu-apply-btn {
+  color: rgba(246, 243, 239, 0.94) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+:root[data-theme="dark"] .nlu-recognize-btn:hover:not(:disabled),
+:root[data-theme="dark"] .nlu-apply-btn:hover:not(:disabled) {
+  background: rgba(255, 119, 87, 0.16) !important;
+  border-color: rgba(255, 119, 87, 0.35) !important;
+}
+
+/* Disabled-состояние, чтобы не было грязно-серой кнопки с плохим контрастом */
+:root[data-theme="dark"] .nlu-recognize-btn:disabled,
+:root[data-theme="dark"] .nlu-apply-btn:disabled,
+:root[data-theme="dark"] .button:disabled {
+  color: rgba(246, 243, 239, 0.42) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  opacity: 1 !important;
+}
+
+/* Общие строки и панели preview */
+:root[data-theme="dark"] .nlu-preview,
+:root[data-theme="dark"] .nlu-preview-row,
+:root[data-theme="dark"] .nlu-source-card,
+:root[data-theme="dark"] .nlu-copy-card,
+:root[data-theme="dark"] .nlu-success-card {
+  color: var(--text) !important;
+}
+
+[data-theme='dark'] .nlu-textarea { background: rgba(30, 30, 40, 0.6); color: #f0f0f5; }
+[data-theme='dark'] .nlu-chip,
+[data-theme='dark'] .nlu-example-chip { background: rgba(255, 255, 255, 0.06); }
+[data-theme='dark'] .nlu-step-dot { background: rgba(255, 255, 255, 0.1); }
+
+
+/* Жёсткий фикс текста внутри ИИ-редактора */
+:root[data-theme="dark"] .nlu-card,
+:root[data-theme="dark"] .nlu-card * {
+  color: rgba(246, 243, 239, 0.86) !important;
+}
+
+/* Приглушённые описания */
+:root[data-theme="dark"] .nlu-card p,
+:root[data-theme="dark"] .nlu-card span {
+  color: rgba(246, 243, 239, 0.62) !important;
+}
+
+/* Возвращаем белый цвет иконкам на градиентных квадратах */
+:root[data-theme="dark"] .nlu-card .section-icon,
+:root[data-theme="dark"] .nlu-card .section-icon *,
+:root[data-theme="dark"] .nlu-card .nlu-icon,
+:root[data-theme="dark"] .nlu-card .nlu-icon * {
+  color: #ffffff !important;
+}
+
+/* FIX: правильное положение крестика в sidebar */
+.liquid-sidebar {
+  position: fixed;
+  overflow: hidden !important;
+}
+
+.sidebar-close {
+  position: absolute !important;
+  top: 24px !important;
+  right: 24px !important;
+  left: auto !important;
+  z-index: 20 !important;
+
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 18px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  background: rgba(255, 255, 255, 0.78) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--text) !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+/* чтобы логотип и название не залезали под крестик */
+.brand-block {
+  padding-right: 64px;
+}
+
+@media (max-width: 760px) {
+  .sidebar-close {
+    top: 18px !important;
+    right: 18px !important;
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .brand-block {
+    padding-right: 58px;
+  }
+}
+
+
+/* 4. Мобильная безопасность: без лишнего горизонтального скролла страницы. */
+@media (max-width: 480px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+  /* Узкие экраны (320–430px): компактные отступы, кнопки в колонку. */
+  .main-area {
+    padding: 14px 12px 80px;
+  }
+  .liquid-sidebar {
+    width: calc(100vw - 20px);
+    padding: 20px 18px;
+  }
+  .button-row {
+    flex-wrap: wrap;
+  }
+}
+
+
+

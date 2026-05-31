@@ -11,8 +11,17 @@ from datetime import datetime
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .database import Base, engine, get_db
-from .models import Project, ComparisonScenario, CalculationHistory
+from .database import Base, engine, get_db, SessionLocal
+from .models import Project, ComparisonScenario, CalculationHistory, User
+from .core.config import settings
+from .deps import get_request_user, get_or_create_default_user
+from .serializers import project_to_dict, project_to_data, apply_project_data
+from .core.activity import (
+    record_event, EVENT_PROJECT_CREATE, EVENT_PROJECT_SAVE, EVENT_NLU_APPLY,
+    EVENT_SCENARIO_CREATE,
+)
+from .routers.auth import router as auth_router
+from .routers.users import router as users_router
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,8 +33,12 @@ from app.core.calculations import (
     calculate_robotic_links,
 )
 from app.schemas import (
+    ApplyChangesRequest,
+    ApplyCommandRequest,
     EconomicsRequest,
+    EquipmentParamsRequest,
     FullProjectRequest,
+    ParseCommandRequest,
     ProductionRequest,
     RiskRequest,
     RoboticsRequest,
@@ -44,13 +57,22 @@ app = FastAPI(
     version="2.0.0",
 )
 Base.metadata.create_all(bind=engine)
+
+# CORS: явный список доменов фронтенда (с credentials нельзя "*").
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router)
+app.include_router(users_router)
+
+# Служебный пользователь для dev-совместимости (владелец «ничьих» проектов).
+with SessionLocal() as _seed_db:
+    get_or_create_default_user(_seed_db)
 
 
 def save_history(module: str, input_data: Dict[str, Any], output_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -142,35 +164,39 @@ def history():
 
 
 @app.post("/api/production/calculate")
-def production_calculate(payload: ProductionRequest):
+def production_calculate(payload: ProductionRequest, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
     result = calculate_production_program(payload)
     save_history("production", payload.model_dump(), result)
+    record_event(db, user.id, "production")
     return result
 
 
 @app.post("/api/robotics/calculate")
-def robotics_calculate(payload: RoboticsRequest):
+def robotics_calculate(payload: RoboticsRequest, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
     result = calculate_robotic_links(payload)
     save_history("robotics", payload.model_dump(), result)
+    record_event(db, user.id, "robotics")
     return result
 
 
 @app.post("/api/risks/calculate")
-def risks_calculate(payload: RiskRequest):
+def risks_calculate(payload: RiskRequest, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
     result = calculate_risk_analysis(payload)
     save_history("risks", payload.model_dump(), result)
+    record_event(db, user.id, "risks")
     return result
 
 
 @app.post("/api/economics/calculate")
-def economics_calculate(payload: EconomicsRequest):
+def economics_calculate(payload: EconomicsRequest, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
     result = calculate_economics(payload)
     save_history("economics", payload.model_dump(), result)
+    record_event(db, user.id, "economics")
     return result
 
 
 @app.post("/api/full-project/calculate")
-def full_project_calculate(payload: FullProjectRequest):
+def full_project_calculate(payload: FullProjectRequest, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
     result: Dict[str, Any] = {
         "project_name": payload.name,
         "created_at": datetime.now().isoformat(timespec="seconds"),
@@ -205,178 +231,306 @@ def full_project_calculate(payload: FullProjectRequest):
         result["summary"]["average_robot_load_percent"] = robotics["average_robot_load_percent"]
 
     save_history("full_project", payload.model_dump(), result)
+    record_event(db, user.id, "full_project")
     return result
+
+
+def _get_owned_project(db: Session, project_id: int, user: User) -> Project:
+    """Возвращает проект, проверяя владельца: 404 если нет, 403 если чужой."""
+    project = db.get(Project, project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+    if project.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Нет доступа к этому проекту")
+    return project
 
 
 @app.get("/api/projects")
-def get_projects(db: Session = Depends(get_db)):
-    projects = db.query(Project).order_by(Project.updated_at.desc()).all()
+def get_projects(db: Session = Depends(get_db), user: User = Depends(get_request_user)):
+    projects = (
+        db.query(Project)
+        .filter(Project.user_id == user.id)
+        .order_by(Project.updated_at.desc())
+        .all()
+    )
+    return [project_to_dict(p) for p in projects]
 
-    result = []
-    for project in projects:
-        data = json.loads(project.data_json)
-
-        result.append({
-            "id": project.id,
-            "name": project.name,
-            "description": project.description,
-            "data": data,
-            "created_at": project.created_at.isoformat(),
-            "updated_at": project.updated_at.isoformat(),
-            "stats": {
-                "production_items": len(data.get("production", {}).get("items", [])),
-                "robotic_operations": len(data.get("robotics", {}).get("operations", [])),
-                "risk_strategies": len(data.get("risks", {}).get("strategies", [])),
-                "economic_periods": len(data.get("economics", {}).get("periods", [])),
-            }
-        })
-
-    return result
 
 @app.post("/api/projects")
-def create_project(payload: dict, db: Session = Depends(get_db)):
-    name = payload.get("name") or payload.get("data", {}).get("name") or "Проект инновационной модернизации"
-    description = payload.get("description")
+def create_project(payload: dict, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
     data = payload.get("data")
-
     if not data:
         raise HTTPException(status_code=400, detail="Не переданы данные проекта")
+    name = payload.get("name") or data.get("name") or "Проект инновационной модернизации"
 
-    project = Project(
-        name=name,
-        description=description,
-        data_json=json.dumps(data, ensure_ascii=False),
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
-    )
-
+    project = Project(user_id=user.id, name=name, description=payload.get("description"))
     db.add(project)
+    apply_project_data(db, project, data)  # JSON → нормализованные таблицы
     db.commit()
     db.refresh(project)
+    record_event(db, user.id, EVENT_PROJECT_CREATE, project_id=project.id)
+    return project_to_dict(project)
 
-    return {
-        "id": project.id,
-        "name": project.name,
-        "description": project.description,
-        "data": json.loads(project.data_json),
-        "created_at": project.created_at.isoformat(),
-        "updated_at": project.updated_at.isoformat(),
-    }
 
 @app.get("/api/projects/{project_id}")
-def get_project(project_id: int, db: Session = Depends(get_db)):
-    project = db.query(Project).filter(Project.id == project_id).first()
+def get_project(project_id: int, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
+    return project_to_dict(_get_owned_project(db, project_id, user))
 
-    if not project:
-        raise HTTPException(status_code=404, detail="Проект не найден")
-
-    return {
-        "id": project.id,
-        "name": project.name,
-        "description": project.description,
-        "data": json.loads(project.data_json),
-        "created_at": project.created_at.isoformat(),
-        "updated_at": project.updated_at.isoformat(),
-    }
 
 @app.put("/api/projects/{project_id}")
-def update_project(project_id: int, payload: dict, db: Session = Depends(get_db)):
-    project = db.query(Project).filter(Project.id == project_id).first()
-
-    if not project:
-        raise HTTPException(status_code=404, detail="Проект не найден")
-
+def update_project(project_id: int, payload: dict, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
+    project = _get_owned_project(db, project_id, user)
     data = payload.get("data")
-    name = payload.get("name") or project.name
-    description = payload.get("description", project.description)
-
     if not data:
         raise HTTPException(status_code=400, detail="Не переданы данные проекта")
-
-    project.name = name
-    project.description = description
-    project.data_json = json.dumps(data, ensure_ascii=False)
-    project.updated_at = datetime.utcnow()
-
+    if payload.get("name"):
+        project.name = payload["name"]
+    if "description" in payload:
+        project.description = payload["description"]
+    apply_project_data(db, project, data)
     db.commit()
     db.refresh(project)
+    record_event(db, user.id, EVENT_PROJECT_SAVE, project_id=project.id)
+    return project_to_dict(project)
 
-    return {
-        "id": project.id,
-        "name": project.name,
-        "description": project.description,
-        "data": json.loads(project.data_json),
-        "created_at": project.created_at.isoformat(),
-        "updated_at": project.updated_at.isoformat(),
-    }
 
 @app.delete("/api/projects/{project_id}")
-def delete_project(project_id: int, db: Session = Depends(get_db)):
-    project = db.query(Project).filter(Project.id == project_id).first()
-
-    if not project:
-        raise HTTPException(status_code=404, detail="Проект не найден")
-
-    db.delete(project)
+def delete_project(project_id: int, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
+    project = _get_owned_project(db, project_id, user)
+    db.delete(project)  # каскад удалит дочерние записи (all, delete-orphan)
     db.commit()
-
     return {"status": "deleted", "id": project_id}
 
-@app.get("/api/comparison-scenarios")
-def get_comparison_scenarios(db: Session = Depends(get_db)):
-    scenarios = db.query(ComparisonScenario).order_by(ComparisonScenario.created_at.desc()).all()
 
+@app.get("/api/comparison-scenarios")
+def get_comparison_scenarios(db: Session = Depends(get_db), user: User = Depends(get_request_user)):
+    scenarios = (
+        db.query(ComparisonScenario)
+        .filter(ComparisonScenario.user_id == user.id)
+        .order_by(ComparisonScenario.created_at.desc())
+        .all()
+    )
     return [
         {
             "id": item.id,
             "project_id": item.project_id,
             "name": item.name,
-            "source_data": json.loads(item.source_data_json),
-            "result": json.loads(item.result_json),
-            "created_at": item.created_at.isoformat(),
+            "source_data": item.source_data,
+            "result": item.result,
+            "created_at": item.created_at.isoformat() if item.created_at else None,
         }
         for item in scenarios
     ]
 
+
 @app.post("/api/comparison-scenarios")
-def create_comparison_scenario(payload: dict, db: Session = Depends(get_db)):
-    name = payload.get("name") or "Сценарий модернизации"
-    project_id = payload.get("project_id")
+def create_comparison_scenario(payload: dict, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
     source_data = payload.get("source_data")
     result = payload.get("result")
-
     if not source_data or not result:
         raise HTTPException(status_code=400, detail="Не переданы данные сценария")
 
-    scenario = ComparisonScenario(
-        project_id=project_id,
-        name=name,
-        source_data_json=json.dumps(source_data, ensure_ascii=False),
-        result_json=json.dumps(result, ensure_ascii=False),
-        created_at=datetime.utcnow(),
-    )
+    project_id = payload.get("project_id")
+    if project_id is not None:
+        _get_owned_project(db, project_id, user)  # сценарий можно привязать только к своему проекту
 
+    scenario = ComparisonScenario(
+        user_id=user.id,
+        project_id=project_id,
+        name=payload.get("name") or "Сценарий модернизации",
+        source_data=source_data,
+        result=result,
+    )
     db.add(scenario)
     db.commit()
     db.refresh(scenario)
-
+    record_event(db, user.id, EVENT_SCENARIO_CREATE, project_id=scenario.project_id)
     return {
         "id": scenario.id,
         "project_id": scenario.project_id,
         "name": scenario.name,
-        "source_data": json.loads(scenario.source_data_json),
-        "result": json.loads(scenario.result_json),
-        "created_at": scenario.created_at.isoformat(),
+        "source_data": scenario.source_data,
+        "result": scenario.result,
+        "created_at": scenario.created_at.isoformat() if scenario.created_at else None,
     }
 
+
 @app.delete("/api/comparison-scenarios/{scenario_id}")
-def delete_comparison_scenario(scenario_id: int, db: Session = Depends(get_db)):
-    scenario = db.query(ComparisonScenario).filter(ComparisonScenario.id == scenario_id).first()
-
-    if not scenario:
+def delete_comparison_scenario(scenario_id: int, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
+    scenario = db.get(ComparisonScenario, scenario_id)
+    if scenario is None:
         raise HTTPException(status_code=404, detail="Сценарий не найден")
-
+    if scenario.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Нет доступа к этому сценарию")
     db.delete(scenario)
     db.commit()
-
     return {"status": "deleted", "id": scenario_id}
+
+
+# ---------------------------------------------------------------------------
+# ИИ-модуль: прогнозирование отказов оборудования (predictive maintenance)
+# Датасет AI4I 2020 (UCI ML Repository). Реализация — в пакете app.ml.
+# ---------------------------------------------------------------------------
+
+@app.post("/api/ai/train")
+def ai_train():
+    """
+    Обучает модели машинного обучения (Random Forest и нейронную сеть)
+    на открытом датасете AI4I 2020 и сохраняет лучшую по F1-мере.
+    """
+    from app.ml.trainer import train_and_persist
+    from app.ml import predictor
+
+    try:
+        summary = train_and_persist()
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Не удалось обучить модель: {exc}")
+
+    predictor.reset_cache()
+    save_history("ai_train", {}, summary)
+    return summary
+
+
+@app.post("/api/ai/predict")
+def ai_predict(payload: EquipmentParamsRequest):
+    """
+    Прогнозирует вероятность отказа оборудования по его рабочим параметрам.
+    Результат содержит готовый процент риска для модуля анализа рисков.
+    """
+    from app.ml.predictor import ModelNotTrainedError, predict_failure
+
+    try:
+        result = predict_failure(
+            type_class=payload.type_class,
+            air_temperature=payload.air_temperature,
+            process_temperature=payload.process_temperature,
+            rotational_speed=payload.rotational_speed,
+            torque=payload.torque,
+            tool_wear=payload.tool_wear,
+        )
+    except ModelNotTrainedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Ошибка прогноза: {exc}")
+
+    save_history("ai_predict", payload.model_dump(), result)
+    return result
+
+
+@app.get("/api/ai/model-info")
+def ai_model_info():
+    """Возвращает статус и метрики обученной модели (или признак отсутствия)."""
+    from app.ml.predictor import get_model_info
+
+    info = get_model_info()
+    if info is None:
+        return {"status": "not_trained", "detail": "Модель ещё не обучена."}
+    return info
+
+
+# ---------------------------------------------------------------------------
+# NLU-модуль: интеллектуальный редактор проектных данных по текстовой команде.
+# Реализация — в пакете app.nlu. Расчётное ядро не затрагивается.
+# ---------------------------------------------------------------------------
+
+@app.post("/api/nlu/train")
+def nlu_train():
+    """Генерирует датасет команд (при отсутствии) и обучает NLU-модель."""
+    from app.nlu.trainer import train_and_persist
+    from app.nlu import predictor as nlu_predictor
+
+    try:
+        summary = train_and_persist()
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Не удалось обучить NLU-модель: {exc}")
+
+    nlu_predictor.reset_cache()
+    save_history("nlu_train", {}, summary)
+    return summary
+
+
+@app.post("/api/nlu/parse-command")
+def nlu_parse_command(payload: ParseCommandRequest):
+    """Разбирает команду и формирует предпросмотр изменений (без применения)."""
+    from app.nlu.actions import build_preview
+    from app.nlu.predictor import NluModelNotTrainedError
+
+    try:
+        return build_preview(
+            payload.command, payload.records,
+            allowed_parameters=payload.allowed_parameters,
+            module_type=payload.module_type,
+        )
+    except NluModelNotTrainedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Ошибка разбора команды: {exc}")
+
+
+@app.post("/api/nlu/apply-command")
+def nlu_apply_command(payload: ApplyCommandRequest, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
+    """Применяет команду к записям проекта при выполнении условий безопасности."""
+    from app.nlu.actions import apply_command
+    from app.nlu.predictor import NluModelNotTrainedError
+
+    try:
+        result = apply_command(
+            payload.command, payload.records, confirm=payload.confirm,
+            allowed_parameters=payload.allowed_parameters,
+            module_type=payload.module_type,
+        )
+    except NluModelNotTrainedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Ошибка применения команды: {exc}")
+
+    save_history("nlu_apply", payload.model_dump(), {
+        "success": result["success"],
+        "message": result["message"],
+        "parsed_command": result["parsed_command"],
+    })
+    if result.get("success"):
+        record_event(db, user.id, EVENT_NLU_APPLY)
+    return result
+
+
+@app.post("/api/nlu/apply-changes")
+def nlu_apply_changes(payload: ApplyChangesRequest, db: Session = Depends(get_db), user: User = Depends(get_request_user)):
+    """Применяет выверенный/отредактированный пользователем набор изменений из preview."""
+    from app.nlu.actions import apply_curated_changes
+
+    try:
+        result = apply_curated_changes(payload.records, payload.changes, payload.source_object)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Ошибка применения изменений: {exc}")
+
+    save_history("nlu_apply_changes", {"changes": payload.changes}, {
+        "success": result["success"], "message": result["message"],
+    })
+    if result.get("success"):
+        record_event(db, user.id, EVENT_NLU_APPLY)
+    return result
+
+
+@app.get("/api/nlu/model-info")
+def nlu_model_info():
+    """Возвращает статус и параметры обученной NLU-модели."""
+    from app.nlu.predictor import get_model_info
+
+    info = get_model_info()
+    if info is None:
+        return {"status": "not_trained", "detail": "NLU-модель ещё не обучена."}
+    return info
+
+
+@app.get("/api/nlu/demo-commands")
+def nlu_demo_commands():
+    """Возвращает набор чистых демонстрационных команд для интерфейса."""
+    from app.nlu.datasets import DEMO_COMMANDS, DEMO_COMMANDS_PATH
+
+    if DEMO_COMMANDS_PATH.exists():
+        try:
+            return json.loads(DEMO_COMMANDS_PATH.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            pass
+    return {"commands": DEMO_COMMANDS}

@@ -59,15 +59,30 @@ import {
   Undo2,
   Redo2,
   RotateCcw,
+  LogOut,
+  UserCircle,
 } from 'lucide-react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { demoProject } from './demo';
+import AiCommandPanel from './components/ai/AiCommandPanel';
+import ProjectEditorPage from './pages/ProjectEditorPage';
+import ProfilePage from './pages/ProfilePage';
+import { MODULE_ADAPTERS } from './utils/moduleAdapters';
+import type { AiRecord, ModuleType } from './utils/moduleAdapters';
+import { withUids, computeHighlight, type AiHighlight } from './utils/aiHighlight';
+import { useAuth } from './auth/AuthContext';
 import type {
+  AiModelInfo,
+  AiPredictResult,
   ApiHistoryItem,
   CashFlowPeriod,
   EconomicsRequest,
+  EquipmentParams,
   FullProjectRequest,
+  NluApplyResult,
+  NluModelInfo,
+  NluParseResult,
   ProductionItem,
   ProductionRequest,
   RiskRequest,
@@ -78,9 +93,16 @@ import type {
 
 
 //const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
-const API_BASE = import.meta.env.VITE_API_BASE ?? (window.location.hostname === 'localhost' ? 'http://127.0.0.1:8000' : '');
+// Локальная разработка: и localhost, и 127.0.0.1 указывают на backend (порт 8000).
+// Прод (другой hostname): пустая строка — запросы идут на тот же origin через reverse-proxy.
+const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const API_BASE = import.meta.env.VITE_API_BASE ?? (isLocalDev ? `http://${window.location.hostname}:8000` : '');
 
 const initialProject = structuredClone(demoProject) as FullProjectRequest;
+
+// Ключи localStorage для восстановления контекста работы после перезагрузки.
+const ACTIVE_PROJECT_KEY = 'modernization_active_project';
+const RESULTS_KEY = 'modernization_results_by_project';
 
 type Page =
   | 'home'
@@ -91,6 +113,10 @@ type Page =
   | 'economics'
   | 'full'
   | 'comparison'
+  | 'ai'
+  | 'editor'
+  | 'project-editor'
+  | 'profile'
   | 'history';
 
 type ToastState = { type: 'success' | 'error'; message: string } | null;
@@ -163,6 +189,30 @@ const pageMeta: Record<Page, { title: string; description: string; icon: any }> 
       'Сопоставление нескольких сценариев модернизации по NPV, IRR, ROI, окупаемости, загрузке оборудования, рискам и роботизированным звеньям.',
     icon: GitCompare,
   },
+  ai: {
+    title: 'ИИ-модуль: прогнозирование отказов оборудования',
+    description:
+      'Машинное обучение на открытом датасете AI4I 2020 (UCI). Сравнение моделей Random Forest и нейронной сети, прогноз вероятности отказа и связь с модулем анализа рисков.',
+    icon: BrainCircuit,
+  },
+  editor: {
+    title: 'ИИ-редактор проектных данных',
+    description:
+      'Интеллектуальный редактор на основе NLU: преобразование текстовой команды в формализованное действие над данными проекта с предварительным просмотром и контролем безопасности.',
+    icon: WandSparkles,
+  },
+  'project-editor': {
+    title: 'Редактор проекта',
+    description:
+      'Единое управление данными активного проекта: метаданные, редактируемые таблицы всех модулей и встроенный ИИ-редактор по выбранной вкладке.',
+    icon: Pencil,
+  },
+  profile: {
+    title: 'Профиль пользователя',
+    description:
+      'Данные аккаунта, статистика по проектам и расчётам, карта активности, настройки и безопасность.',
+    icon: UserCircle,
+  },
   history: {
     title: 'История расчётов',
     description: 'Журнал запусков, сохранённый в серверной части приложения.',
@@ -209,10 +259,27 @@ async function safeJson(response: Response) {
 }
 
 export default function App() {
+  const { user, logout, refreshUser } = useAuth();
   const [page, setPage] = useState<Page>('home');
   const [projects, setProjects] = useState<DbProject[]>([]);
-  const [activeProjectId, setActiveProjectId] = useState<number | null>(null);
-  const [results, setResults] = useState<ResultsMap>({});
+  const [activeProjectId, setActiveProjectId] = useState<number | null>(() => {
+    const stored = localStorage.getItem(ACTIVE_PROJECT_KEY);
+    const id = stored ? Number(stored) : NaN;
+    return Number.isFinite(id) ? id : null;
+  });
+  // Результаты расчётов хранятся отдельно по каждому проекту и переживают
+  // переключение проектов и перезагрузку страницы (localStorage).
+  const [resultsByProject, setResultsByProject] = useState<Record<number, ResultsMap>>(() => {
+    try {
+      const raw = localStorage.getItem(RESULTS_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  });
+  const [aiEditHighlight, setAiEditHighlight] = useState<Record<string, AiHighlight | null>>({});
+  const aiHighlightTimers = useRef<Record<string, number>>({});
   const [historyItems, setHistoryItems] = useState<ApiHistoryItem[]>([]);
   const [scenarios, setScenarios] = useState<DbScenario[]>([]);
   const [scenarioName, setScenarioName] = useState('Программа модернизации 1');
@@ -268,6 +335,10 @@ export default function App() {
     economics: false,
     full: false,
     comparison: false,
+    ai: true,
+    editor: true,
+    'project-editor': true,
+    profile: true,
     history: true,
   });
 
@@ -280,6 +351,37 @@ export default function App() {
   }, [projects, activeProjectId]);
 
   const project = activeProject?.data || initialProject;
+
+  // Результаты активного проекта (производный срез из общего хранилища).
+  const results = useMemo<ResultsMap>(
+    () => (activeProjectId != null ? resultsByProject[activeProjectId] || {} : {}),
+    [resultsByProject, activeProjectId],
+  );
+
+  // Запись результатов в слот активного проекта.
+  function setActiveResults(updater: ResultsMap | ((prev: ResultsMap) => ResultsMap)) {
+    setResultsByProject((prev) => {
+      const targetId = activeProjectId ?? activeProject?.id;
+      if (targetId == null) return prev;
+      const current = prev[targetId] || {};
+      const next = typeof updater === 'function' ? (updater as (p: ResultsMap) => ResultsMap)(current) : updater;
+      return { ...prev, [targetId]: next };
+    });
+  }
+
+  // Единая точка переключения активного проекта: сбрасывает любое локальное
+  // состояние редактирования/анимаций предыдущего проекта, но СОХРАНЯЕТ
+  // результаты расчётов (они хранятся отдельно по каждому проекту).
+  function selectProject(id: number) {
+    if (id === activeProjectId) return;
+    setActiveProjectId(id);
+    setEditSession({ moduleKey: null, originalProject: null, past: [], future: [] });
+    setDataEditing({ production: false, robotics: false, risks: false, economics: false, full: false });
+    setDataSaved({ production: true, robotics: true, risks: true, economics: true, full: true });
+    setAnimatedSummary('');
+    setCalculationSteps([]);
+    setLoading(null);
+  }
 
   const summary = useMemo(() => {
     const economics = results.economics || results.full?.modules?.economics;
@@ -302,6 +404,22 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('modernization_theme', theme);
   }, [theme]);
+
+  // Сохраняем активный проект, чтобы восстановить его после перезагрузки.
+  useEffect(() => {
+    if (activeProjectId != null) {
+      localStorage.setItem(ACTIVE_PROJECT_KEY, String(activeProjectId));
+    }
+  }, [activeProjectId]);
+
+  // Сохраняем результаты расчётов по проектам.
+  useEffect(() => {
+    try {
+      localStorage.setItem(RESULTS_KEY, JSON.stringify(resultsByProject));
+    } catch {
+      // localStorage может быть переполнен — не критично для работы.
+    }
+  }, [resultsByProject]);
 
   useEffect(() => {
     fetchProjects();
@@ -338,7 +456,14 @@ export default function App() {
 
       if (Array.isArray(data) && data.length > 0) {
         setProjects(data);
-        setActiveProjectId((prev) => prev || data[0].id);
+        // Восстанавливаем ранее активный проект (state или localStorage),
+        // и только если его нет в библиотеке — берём первый.
+        setActiveProjectId((prev) => {
+          if (prev != null && data.some((p: DbProject) => p.id === prev)) return prev;
+          const stored = Number(localStorage.getItem(ACTIVE_PROJECT_KEY));
+          if (Number.isFinite(stored) && data.some((p: DbProject) => p.id === stored)) return stored;
+          return data[0].id;
+        });
         return;
       }
 
@@ -392,7 +517,10 @@ export default function App() {
       return exists ? prev.map((item) => (item.id === created.id ? created : item)) : [created, ...prev];
     });
     setActiveProjectId(created.id);
-    setResults({});
+    setResultsByProject((prev) => ({ ...prev, [created.id]: {} }));
+    // Новый проект — сбрасываем возможную незавершённую сессию редактирования.
+    setEditSession({ moduleKey: null, originalProject: null, past: [], future: [] });
+    setDataEditing({ production: false, robotics: false, risks: false, economics: false, full: false });
 
     if (notify) showToast('success', 'Проект сохранён в базе данных.');
     return created as DbProject;
@@ -455,6 +583,44 @@ export default function App() {
   }
 }
 
+  // Применение результата ИИ-команды модуля: запись данных + подсветка с автогашением.
+  function applyModuleAi(moduleKey: string, nextModuleData: any, highlight: AiHighlight) {
+    updateActiveProject((prev) => ({ ...prev, [moduleKey]: nextModuleData }));
+    setAiEditHighlight((prev) => ({ ...prev, [moduleKey]: highlight }));
+    if (aiHighlightTimers.current[moduleKey]) {
+      window.clearTimeout(aiHighlightTimers.current[moduleKey]);
+    }
+    aiHighlightTimers.current[moduleKey] = window.setTimeout(() => {
+      setAiEditHighlight((prev) => ({ ...prev, [moduleKey]: null }));
+    }, 5200);
+  }
+
+  function aiRowClass(moduleKey: string, name: string) {
+    const h = aiEditHighlight[moduleKey];
+    if (!h) return '';
+    if (h.createdNames.includes(name)) return 'ai-row-created';
+    if (h.changedNames.includes(name)) return 'ai-row-changed';
+    return '';
+  }
+
+  function aiCellClass(moduleKey: string, name: string, field: string) {
+    const h = aiEditHighlight[moduleKey];
+    if (!h) return '';
+    return (h.changedFieldsByName[name] || []).includes(field) ? 'ai-cell-changed' : '';
+  }
+
+  function aiBadge(moduleKey: string, name: string) {
+    const h = aiEditHighlight[moduleKey];
+    if (!h) return null;
+    if (h.createdNames.includes(name)) {
+      return <span className="ai-badge created" title="Создано ИИ-редактором">AI created</span>;
+    }
+    if (h.changedNames.includes(name)) {
+      return <span className="ai-badge updated" title="Изменено ИИ-редактором">AI updated</span>;
+    }
+    return null;
+  }
+
   async function deleteProject(projectId: number) {
     if (projects.length <= 1) {
       showToast('error', 'Нельзя удалить единственный проект в библиотеке.');
@@ -468,7 +634,12 @@ export default function App() {
       const nextProjects = projects.filter((item) => item.id !== projectId);
       setProjects(nextProjects);
       if (activeProjectId === projectId) setActiveProjectId(nextProjects[0]?.id || null);
-      setResults({});
+      // Удаляем результаты удалённого проекта, остальные сохраняем.
+      setResultsByProject((prev) => {
+        const next = { ...prev };
+        delete next[projectId];
+        return next;
+      });
       showToast('success', 'Проект удалён из базы данных.');
     } catch (error: any) {
       showToast('error', error.message || 'Ошибка удаления проекта.');
@@ -502,6 +673,29 @@ export default function App() {
     });
   }
 
+  // Обновление метаданных проекта (название + описание) из редактора проекта.
+  function updateProjectMeta(name: string, description: string | null) {
+    if (!activeProject) return;
+    const nextData = { ...activeProject.data, name };
+
+    setProjects((prev) =>
+      prev.map((item) =>
+        item.id === activeProject.id
+          ? { ...item, name, description, data: nextData, updated_at: new Date().toISOString() }
+          : item,
+      ),
+    );
+
+    saveProject(activeProject.id, nextData, name, description)
+      .then(() => showToast('success', 'Сведения проекта обновлены.'))
+      .catch(() => showToast('error', 'Не удалось сохранить сведения проекта.'));
+  }
+
+  // Сохранение данных одного модуля активного проекта (из редактора проекта).
+  function saveModuleData(moduleKey: string, moduleData: any) {
+    updateActiveProject((prev) => ({ ...prev, [moduleKey]: moduleData }));
+  }
+
   async function callApi(endpoint: string, payload: unknown, key: string) {
     setLoading(key);
     setAnimatedSummary('');
@@ -533,7 +727,7 @@ export default function App() {
       }
 
       const data = await response.json();
-      setResults((prev) => ({ ...prev, [key]: data }));
+      setActiveResults((prev) => ({ ...prev, [key]: data }));
       fetchHistory();
       typeSummary(buildHumanSummary(key, data));
       showToast('success', 'Расчёт выполнен успешно.');
@@ -754,7 +948,6 @@ export default function App() {
   async function loadDemo() {
     try {
       await createProjectFromData(structuredClone(demoProject), demoProject.name || 'Демо-проект инновационной модернизации');
-      setResults({});
       showToast('success', 'Демо-проект добавлен в библиотеку.');
     } catch (error: any) {
       showToast('error', error.message || 'Не удалось загрузить демо-проект.');
@@ -879,7 +1072,7 @@ function redoEditAction() {
   function clearModuleData(moduleKey: string) {
     setDataSaved((prev) => ({ ...prev, [moduleKey]: false }));
     setDataEditing((prev) => ({ ...prev, [moduleKey]: false }));
-    setResults((prev) => {
+    setActiveResults((prev) => {
       const next = { ...prev };
       delete next[moduleKey];
       return next;
@@ -1094,6 +1287,22 @@ function redoEditAction() {
                 {theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
               </button>
 
+              {user && (
+                <div className="auth-user-block">
+                  <button
+                    className="auth-user-open"
+                    onClick={() => { setPage('profile'); setSidebarOpen(false); }}
+                    title="Открыть профиль"
+                  >
+                    <span className="auth-user-email">{user.full_name || user.email}</span>
+                    <span className="auth-user-role">{user.email}</span>
+                  </button>
+                  <button className="auth-logout-btn" onClick={logout}>
+                    <LogOut size={15} /> Выйти
+                  </button>
+                </div>
+              )}
+
               <nav className="menu">
                 <NavButton page={page} setPage={setPage} value="home" icon={<Rocket size={18} />} label="Главная" onNavigate={() => setSidebarOpen(false)} />
                 <NavButton page={page} setPage={setPage} value="dashboard" icon={<LayoutDashboard size={18} />} label="Дашборд" onNavigate={() => setSidebarOpen(false)} />
@@ -1103,7 +1312,11 @@ function redoEditAction() {
                 <NavButton page={page} setPage={setPage} value="economics" icon={<Sigma size={18} />} label="Экономика проекта" onNavigate={() => setSidebarOpen(false)} />
                 <NavButton page={page} setPage={setPage} value="full" icon={<Rocket size={18} />} label="Единый расчёт" onNavigate={() => setSidebarOpen(false)} />
                 <NavButton page={page} setPage={setPage} value="comparison" icon={<GitCompare size={18} />} label="Сравнение программ" onNavigate={() => setSidebarOpen(false)} />
+                <NavButton page={page} setPage={setPage} value="ai" icon={<BrainCircuit size={18} />} label="ИИ: прогноз отказов" onNavigate={() => setSidebarOpen(false)} />
+                <NavButton page={page} setPage={setPage} value="editor" icon={<WandSparkles size={18} />} label="ИИ-редактор данных" onNavigate={() => setSidebarOpen(false)} />
+                <NavButton page={page} setPage={setPage} value="project-editor" icon={<Pencil size={18} />} label="Редактор проекта" onNavigate={() => setSidebarOpen(false)} />
                 <NavButton page={page} setPage={setPage} value="history" icon={<History size={18} />} label="История" onNavigate={() => setSidebarOpen(false)} />
+                <NavButton page={page} setPage={setPage} value="profile" icon={<UserCircle size={18} />} label="Профиль" onNavigate={() => setSidebarOpen(false)} />
               </nav>
 
               <div className="sidebar-card glass-soft">
@@ -1162,12 +1375,7 @@ function redoEditAction() {
               projects={projects}
               activeProject={activeProject}
               activeProjectId={activeProject?.id || null}
-              setActiveProjectId={(id) => {
-                setActiveProjectId(id);
-                setResults({});
-                setAnimatedSummary('');
-                setCalculationSteps([]);
-              }}
+              setActiveProjectId={selectProject}
               onRename={renameActiveProject}
               onDuplicate={duplicateActiveProject}
               onDelete={deleteProject}
@@ -1195,6 +1403,14 @@ function redoEditAction() {
         {page === 'production' && (
           <ModulePage
             title="Производственная программа"
+            aiPanel={
+              <AiCommandPanel
+                adapter={MODULE_ADAPTERS.production}
+                moduleData={project.production}
+                onApply={(next, highlight) => applyModuleAi('production', next, highlight)}
+                showToast={showToast}
+              />
+            }
             isSaved={dataSaved.production}
             isEditing={dataEditing.production}
             onUpload={(file: File) => handleJsonUpload('production', file)}
@@ -1243,16 +1459,16 @@ function redoEditAction() {
                   <EditableTable
                     headers={['Изделие', 'Объём', 'Переналадка', 'Группа', 'Комментарий', '']}
                     rows={project.production.items.map((item, index) => (
-                      <tr key={index}>
-                        <td><input value={item.name} onChange={(e) => updateProductionItem(index, 'name', e.target.value)} /></td>
-                        <td>
+                      <tr key={index} className={aiRowClass('production', item.name)}>
+                        <td><div className="ai-name-cell"><input value={item.name} onChange={(e) => updateProductionItem(index, 'name', e.target.value)} />{aiBadge('production', item.name)}</div></td>
+                        <td className={aiCellClass('production', item.name, 'quantity')}>
                           <DecimalInput
                             value={item.quantity}
                             onChange={(value) => updateProductionItem(index, 'quantity', String(value))}
                           />
                         </td>
 
-                        <td>
+                        <td className={aiCellClass('production', item.name, 'setup_time')}>
                           <DecimalInput
                             value={item.setup_time}
                             onChange={(value) => updateProductionItem(index, 'setup_time', String(value))}
@@ -1283,6 +1499,14 @@ function redoEditAction() {
         {page === 'robotics' && (
           <ModulePage
             title="Роботизированные звенья"
+            aiPanel={
+              <AiCommandPanel
+                adapter={MODULE_ADAPTERS.robotics}
+                moduleData={project.robotics}
+                onApply={(next, highlight) => applyModuleAi('robotics', next, highlight)}
+                showToast={showToast}
+              />
+            }
             isSaved={dataSaved.robotics}
             isEditing={dataEditing.robotics}
             onUpload={(file: File) => handleJsonUpload('robotics', file)}
@@ -1331,23 +1555,23 @@ function redoEditAction() {
                   <EditableTable
                     headers={['Операция', 'top', 'kz', 'to', 'Станок', 'Комментарий', '']}
                     rows={project.robotics.operations.map((item, index) => (
-                      <tr key={index}>
-                        <td><input value={item.name} onChange={(e) => updateOperation(index, 'name', e.target.value)} /></td>
-                        <td>
+                      <tr key={index} className={aiRowClass('robotics', item.name)}>
+                        <td><div className="ai-name-cell"><input value={item.name} onChange={(e) => updateOperation(index, 'name', e.target.value)} />{aiBadge('robotics', item.name)}</div></td>
+                        <td className={aiCellClass('robotics', item.name, 'top')}>
                           <DecimalInput
                             value={item.top}
                             onChange={(value) => updateOperation(index, 'top', String(value))}
                           />
                         </td>
 
-                        <td>
+                        <td className={aiCellClass('robotics', item.name, 'kz')}>
                           <DecimalInput
                             value={item.kz}
                             onChange={(value) => updateOperation(index, 'kz', String(value))}
                           />
                         </td>
 
-                        <td>
+                        <td className={aiCellClass('robotics', item.name, 'service_time')}>
                           <DecimalInput
                             value={item.service_time}
                             onChange={(value) => updateOperation(index, 'service_time', String(value))}
@@ -1378,6 +1602,14 @@ function redoEditAction() {
         {page === 'risks' && (
           <ModulePage
             title="Анализ рисков"
+            aiPanel={
+              <AiCommandPanel
+                adapter={MODULE_ADAPTERS.risks}
+                moduleData={project.risks}
+                onApply={(next, highlight) => applyModuleAi('risks', next, highlight)}
+                showToast={showToast}
+              />
+            }
             isSaved={dataSaved.risks}
             isEditing={dataEditing.risks}
             onUpload={(file: File) => handleJsonUpload('risks', file)}
@@ -1448,20 +1680,25 @@ function redoEditAction() {
                   />
                   <div className="strategies-grid">
                     {project.risks.strategies.map((strategy, strategyIndex) => (
-                      <div className="strategy-card glass-soft" key={strategyIndex}>
+                      <div className={`strategy-card glass-soft ${aiRowClass('risks', strategy.name)}`} key={strategyIndex}>
                         <div className="strategy-head">
                           <strong>Стратегия {strategyIndex + 1}</strong>
-                          <button className="icon-button danger" onClick={() => removeStrategy(strategyIndex)}>×</button>
+                          <div className="ai-name-cell">
+                            {aiBadge('risks', strategy.name)}
+                            <button className="icon-button danger" onClick={() => removeStrategy(strategyIndex)}>×</button>
+                          </div>
                         </div>
                         <div className="form-grid two">
                           <Field label="Название">
                             <input value={strategy.name} onChange={(e) => updateStrategy(strategyIndex, 'name', e.target.value)} />
                           </Field>
                           <Field label="Стоимость">
+                            <div className={aiCellClass('risks', strategy.name, 'cost')}>
                               <DecimalInput
                                 value={strategy.cost}
                                 onChange={(value) => updateStrategy(strategyIndex, 'cost', value)}
                               />
+                            </div>
                           </Field>
                         </div>
                         <EditableTable
@@ -1500,6 +1737,14 @@ function redoEditAction() {
         {page === 'economics' && (
           <ModulePage
             title="Экономическая эффективность проекта"
+            aiPanel={
+              <AiCommandPanel
+                adapter={MODULE_ADAPTERS.economics}
+                moduleData={project.economics}
+                onApply={(next, highlight) => applyModuleAi('economics', next, highlight)}
+                showToast={showToast}
+              />
+            }
             isSaved={dataSaved.economics}
             isEditing={dataEditing.economics}
             onUpload={(file: File) => handleJsonUpload('economics', file)}
@@ -1547,44 +1792,49 @@ function redoEditAction() {
                   />
                   <EditableTable
                     headers={['Год', 'Приток', 'Опер. затраты', 'Риск-потери', 'Обслуживание', 'Доп. инвестиции', '']}
-                    rows={project.economics.periods.map((period, index) => (
-                      <tr key={index}>
+                    rows={project.economics.periods.map((period, index) => {
+                      const periodName = `Год ${period.year}`;
+                      return (
+                      <tr key={index} className={aiRowClass('economics', periodName)}>
                         <td>
-                          <DecimalInput
-                            value={period.year}
-                            onChange={(value) => updatePeriod(index, 'year', String(value))}
-                          />
+                          <div className="ai-name-cell">
+                            <DecimalInput
+                              value={period.year}
+                              onChange={(value) => updatePeriod(index, 'year', String(value))}
+                            />
+                            {aiBadge('economics', periodName)}
+                          </div>
                         </td>
 
-                        <td>
+                        <td className={aiCellClass('economics', periodName, 'inflow')}>
                           <DecimalInput
                             value={period.inflow}
                             onChange={(value) => updatePeriod(index, 'inflow', String(value))}
                           />
                         </td>
 
-                        <td>
+                        <td className={aiCellClass('economics', periodName, 'operating_costs')}>
                           <DecimalInput
                             value={period.operating_costs}
                             onChange={(value) => updatePeriod(index, 'operating_costs', String(value))}
                           />
                         </td>
 
-                        <td>
+                        <td className={aiCellClass('economics', periodName, 'risk_losses')}>
                           <DecimalInput
                             value={period.risk_losses}
                             onChange={(value) => updatePeriod(index, 'risk_losses', String(value))}
                           />
                         </td>
 
-                        <td>
+                        <td className={aiCellClass('economics', periodName, 'maintenance_costs')}>
                           <DecimalInput
                             value={period.maintenance_costs}
                             onChange={(value) => updatePeriod(index, 'maintenance_costs', String(value))}
                           />
                         </td>
 
-                        <td>
+                        <td className={aiCellClass('economics', periodName, 'additional_investment')}>
                           <DecimalInput
                             value={period.additional_investment || 0}
                             onChange={(value) => updatePeriod(index, 'additional_investment', String(value))}
@@ -1592,7 +1842,8 @@ function redoEditAction() {
                         </td>
                         <td><button className="icon-button danger" onClick={() => removePeriod(index)}>×</button></td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   />
                 </SectionCard>
               </div>
@@ -1676,6 +1927,45 @@ function redoEditAction() {
               await fetchComparisonScenarios();
               showToast('success', 'Сценарий удалён из сравнения.');
             }}
+          />
+        )}
+
+        {page === 'ai' && <AiPage showToast={showToast} />}
+
+        {page === 'editor' && (
+          <AiEditorPage
+            key={activeProject?.id || 'no-project'}
+            showToast={showToast}
+            project={project}
+            activeProjectName={activeProject?.name}
+            onApplyModule={applyModuleAi}
+          />
+        )}
+
+        {page === 'project-editor' && (
+          <ProjectEditorPage
+            key={activeProject?.id || 'no-project'}
+            activeProject={activeProject}
+            project={project}
+            onSaveModule={saveModuleData}
+            onSaveMeta={updateProjectMeta}
+            onApplyModuleAi={applyModuleAi}
+            showToast={showToast}
+          />
+        )}
+
+        {page === 'profile' && user && (
+          <ProfilePage
+            user={user}
+            refreshUser={refreshUser}
+            logout={logout}
+            theme={theme}
+            setTheme={setTheme}
+            showToast={showToast}
+            projects={projects}
+            scenarios={scenarios}
+            historyItems={historyItems}
+            goToProject={(id) => { selectProject(id); setPage('project-editor'); }}
           />
         )}
 
@@ -2545,6 +2835,7 @@ function ModulePage({
   canUndo,
   canRedo,
   onClear,
+  aiPanel,
 }: any) {
   return (
     <div className="module-page">
@@ -2620,6 +2911,8 @@ function ModulePage({
 
           {isEditing ? (
             <div className="module-editor">
+              <h3 className="module-editor-title">Редактирование данных</h3>
+              {aiPanel}
               {input}
             </div>
           ) : (
@@ -3696,6 +3989,898 @@ async function downloadFullReport() {
 
 function Interpretation({ text }: { text: string }) {
   return <div className="interpretation glass-soft">{text}</div>;
+}
+
+
+function riskLevelColor(probability: number) {
+  if (probability < 0.15) return '#0f9f68';
+  if (probability < 0.4) return '#d8a200';
+  if (probability < 0.7) return '#ff7757';
+  return '#e23d3d';
+}
+
+
+// --- ИИ-редактор проектных данных (NLU) ---
+
+const INTENT_LABELS: Record<string, string> = {
+  update_parameter: 'Изменение параметра',
+  set_parameter: 'Установка значения',
+  create_items: 'Создание позиций',
+  copy_items: 'Копирование объектов',
+  multi_set_parameter: 'Индивидуальные значения',
+  unknown: 'Не распознано',
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  increase: 'Увеличить',
+  decrease: 'Уменьшить',
+  set: 'Установить',
+  create: 'Создать',
+  copy: 'Копировать',
+  set_multiple: 'Назначить по объектам',
+  none: '—',
+};
+
+const PARAM_LABELS: Record<string, string> = {
+  setup_time: 'Время переналадки',
+  quantity: 'Количество',
+  takt: 'Такт',
+  top: 'Оперативное время',
+  kz: 'Коэффициент загрузки',
+  cost: 'Стоимость',
+  section: 'Сечение',
+};
+
+const VALUE_TYPE_LABELS: Record<string, string> = {
+  percent: 'проценты',
+  absolute: 'абсолютное',
+  count: 'количество',
+  factor: 'кратность',
+  none: '—',
+};
+
+function confidenceTier(confidence: number): 'high' | 'medium' | 'low' {
+  if (confidence >= 0.8) return 'high';
+  if (confidence >= 0.55) return 'medium';
+  return 'low';
+}
+
+function AiEditorPage({
+  showToast,
+  project,
+  activeProjectName,
+  onApplyModule,
+}: {
+  showToast: (type: 'success' | 'error', message: string) => void;
+  project: FullProjectRequest;
+  activeProjectName?: string;
+  onApplyModule: (moduleKey: string, nextModuleData: any, highlight: AiHighlight) => void;
+}) {
+  const [modelInfo, setModelInfo] = useState<NluModelInfo | null>(null);
+  const [command, setCommand] = useState('');
+  const [moduleType, setModuleType] = useState<ModuleType>('production');
+  const [parseResult, setParseResult] = useState<NluParseResult | null>(null);
+  const [applyResult, setApplyResult] = useState<NluApplyResult | null>(null);
+  const [training, setTraining] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  // Редактор работает с данными выбранного модуля активного проекта (не demo-data).
+  const adapter = MODULE_ADAPTERS[moduleType];
+  const moduleData = (project as any)?.[moduleType];
+  const records = useMemo<AiRecord[]>(
+    () => withUids(adapter.toRecords(moduleData)),
+    [adapter, moduleData],
+  );
+  const examples = adapter.examples;
+
+  useEffect(() => {
+    fetchModelInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // При смене модуля сбрасываем устаревший предпросмотр предыдущего модуля.
+  useEffect(() => {
+    setParseResult(null);
+    setApplyResult(null);
+    setCommand('');
+  }, [moduleType]);
+
+  async function fetchModelInfo() {
+    try {
+      const response = await fetch(`${API_BASE}/api/nlu/model-info`);
+      if (!response.ok) return;
+      setModelInfo(await response.json());
+    } catch {
+      // backend может быть не запущен
+    }
+  }
+
+  async function trainModel() {
+    setTraining(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/nlu/train`, { method: 'POST' });
+      if (!response.ok) {
+        const error = await safeJson(response);
+        throw new Error(error?.detail || 'Не удалось обучить NLU-модель');
+      }
+      await fetchModelInfo();
+      showToast('success', 'NLU-модель обучена на доменном датасете команд.');
+    } catch (error: any) {
+      showToast('error', error.message || 'Ошибка обучения NLU-модели.');
+    } finally {
+      setTraining(false);
+    }
+  }
+
+  function contextBody() {
+    return {
+      module_type: adapter.moduleType,
+      allowed_parameters: adapter.allowedParameters,
+      target_groups: adapter.targetGroups,
+    };
+  }
+
+  async function recognize() {
+    if (!command.trim()) return;
+    setParsing(true);
+    setParseResult(null);
+    setApplyResult(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/nlu/parse-command`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command, records, ...contextBody() }),
+      });
+      if (!response.ok) {
+        const error = await safeJson(response);
+        throw new Error(error?.detail || 'Не удалось распознать команду');
+      }
+      const data: NluParseResult = await response.json();
+      setParseResult(data);
+    } catch (error: any) {
+      showToast('error', error.message || 'Ошибка распознавания команды.');
+    } finally {
+      setParsing(false);
+    }
+  }
+
+  async function applyChanges() {
+    if (!parseResult?.can_apply) return;
+    setApplying(true);
+    const before = records;
+    try {
+      const response = await fetch(`${API_BASE}/api/nlu/apply-command`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command, records, confirm: parseResult.needs_confirmation, ...contextBody() }),
+      });
+      if (!response.ok) {
+        const error = await safeJson(response);
+        throw new Error(error?.detail || 'Не удалось применить команду');
+      }
+      const data: NluApplyResult = await response.json();
+      if (data.success) {
+        // Записываем результат обратно в активный проект (с подсветкой изменений).
+        const after = data.updated_records as AiRecord[];
+        const highlight = computeHighlight(before, after, command);
+        onApplyModule(adapter.moduleType, adapter.fromRecords(after, moduleData), highlight);
+        setApplyResult(data);
+        setParseResult(null);
+        showToast('success', data.message);
+      } else {
+        showToast('error', data.message || 'Команда не была применена.');
+      }
+    } catch (error: any) {
+      showToast('error', error.message || 'Ошибка применения команды.');
+    } finally {
+      setApplying(false);
+    }
+  }
+
+  function resetRecords() {
+    setParseResult(null);
+    setApplyResult(null);
+    setCommand('');
+  }
+
+  const isReady = modelInfo?.status === 'ready';
+  const parsed = parseResult?.parsed_command;
+  const tier = parsed ? confidenceTier(parsed.confidence) : 'high';
+
+  // Этап процесса: Команда → Распознавание → Preview → Применение.
+  let stage = 1;
+  if (parseResult) stage = parseResult.can_apply ? 3 : 2;
+  if (applyResult?.success) stage = 4;
+
+  const steps = ['Команда', 'Распознавание', 'Предпросмотр', 'Применение'];
+
+  return (
+    <div className="nlu-shell">
+      <motion.div
+        className="nlu-hero glass"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <div className="nlu-hero-glow" />
+        <div className="nlu-hero-content">
+          <div className="nlu-hero-badge">
+            <WandSparkles size={16} /> Интеллектуальный помощник
+          </div>
+          <h2>ИИ-редактор проектных данных</h2>
+          <p>
+            Опишите изменение естественным языком — система распознает намерение,
+            покажет предварительный просмотр и применит его только после вашего подтверждения.
+          </p>
+
+          <div className="nlu-context-row">
+            <div className="nlu-context-chip">
+              <FolderOpen size={15} />
+              <span>Активный проект:</span>
+              <strong>{activeProjectName || 'не выбран'}</strong>
+            </div>
+            <label className="nlu-module-select">
+              <span>Модуль данных</span>
+              <select value={moduleType} onChange={(e) => setModuleType(e.target.value as ModuleType)}>
+                <option value="production">Производственная программа</option>
+                <option value="robotics">Роботизированные звенья</option>
+                <option value="risks">Анализ рисков</option>
+                <option value="economics">Экономика проекта</option>
+              </select>
+            </label>
+          </div>
+
+          <div className="nlu-train-row">
+            <button className="button primary nlu-btn-shine" onClick={trainModel} disabled={training}>
+              {training ? <LoaderCircle size={16} className="spin" /> : <Sparkles size={16} />}
+              {training ? 'Обучение модели...' : isReady ? 'Переобучить NLU-модель' : 'Обучить NLU-модель'}
+            </button>
+            <div className={`ai-status-chip ${isReady ? 'ready' : 'pending'}`}>
+              {isReady ? <CircleCheckBig size={16} /> : <ShieldAlert size={16} />}
+              {isReady ? `Модель готова · ${modelInfo?.intent_model_label || ''}` : 'Модель не обучена'}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="nlu-stepper">
+        {steps.map((label, index) => (
+          <div key={label} className={`nlu-step ${stage >= index + 1 ? 'active' : ''} ${stage === index + 1 ? 'current' : ''}`}>
+            <span className="nlu-step-dot">{index + 1}</span>
+            <span className="nlu-step-label">{label}</span>
+            {index < steps.length - 1 && <span className="nlu-step-line" />}
+          </div>
+        ))}
+      </div>
+
+      <motion.div
+        className="nlu-card glass"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.05 }}
+      >
+        <div className="nlu-card-head">
+          <BrainCircuit size={18} />
+          <h3>Команда</h3>
+        </div>
+
+        <div className={`nlu-textarea-wrap ${focused ? 'focused' : ''}`}>
+          <div className="nlu-textarea-glow" />
+          <textarea
+            className="nlu-textarea"
+            value={command}
+            placeholder={adapter.placeholder}
+            onChange={(e) => setCommand(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+          />
+        </div>
+
+        <div className="nlu-examples">
+          <span className="nlu-examples-label">Примеры команд:</span>
+          <div className="nlu-examples-chips">
+            {examples.map((example) => (
+              <button
+                key={example}
+                className="nlu-example-chip"
+                onClick={() => setCommand(example)}
+                title={example}
+              >
+                {example.length > 46 ? `${example.slice(0, 44)}…` : example}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="nlu-actions-row">
+          <button className="button primary nlu-recognize-btn" onClick={recognize} disabled={parsing || !isReady}>
+            {parsing ? <LoaderCircle size={16} className="spin" /> : <WandSparkles size={16} />}
+            {parsing ? 'Распознавание...' : 'Распознать'}
+          </button>
+          {!isReady && <span className="ai-hint-text">Сначала обучите модель в верхнем блоке.</span>}
+        </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {parsing && (
+          <motion.div
+            className="nlu-card glass"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="nlu-thinking">
+              <div className="nlu-thinking-orb"><span /><span /><span /></div>
+              <div>
+                <strong>Модель анализирует команду</strong>
+                <div className="nlu-skeleton-row">
+                  <div className="nlu-skeleton" />
+                  <div className="nlu-skeleton short" />
+                  <div className="nlu-skeleton" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {parsed && !parsing && (
+          <motion.div
+            className="nlu-card glass"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div className="nlu-card-head">
+              <Sparkles size={18} />
+              <h3>Распознанное действие</h3>
+            </div>
+
+            <div className="nlu-chips">
+              <Chip label="Намерение" value={INTENT_LABELS[parsed.intent] || parsed.intent} index={0} />
+              <Chip label="Действие" value={ACTION_LABELS[parsed.action] || parsed.action} index={1} />
+              {parsed.target_group && <Chip label="Объект" value={parsed.target_group} index={2} />}
+              {parsed.source_object && <Chip label="Источник" value={parsed.source_object} index={3} />}
+              {parsed.count !== null && <Chip label="Количество" value={String(parsed.count)} index={4} />}
+              {parsed.parameter && (
+                <Chip label="Параметр" value={PARAM_LABELS[parsed.parameter] || parsed.parameter} index={5} />
+              )}
+              {parsed.value !== null && parsed.intent !== 'create_items' && (
+                <Chip label="Значение" value={String(parsed.value)} index={6} />
+              )}
+              {parsed.value !== null && parsed.intent !== 'create_items' && parsed.intent !== 'copy_items' && (
+                <Chip label="Тип значения" value={VALUE_TYPE_LABELS[parsed.value_type] || parsed.value_type} index={7} />
+              )}
+              <motion.span
+                className={`nlu-chip nlu-chip-conf tier-${tier}`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 8 * 0.06 }}
+              >
+                <span className="nlu-chip-key">Уверенность</span>
+                <span className="nlu-chip-val">{Math.round(parsed.confidence * 100)}%</span>
+              </motion.span>
+            </div>
+
+            {parsed.assignments && parsed.assignments.length > 0 && (
+              <div className="nlu-assign-chips">
+                {parsed.assignments.map((assignment) => (
+                  <span className="nlu-assign-chip" key={assignment.object_name}>
+                    <b>{assignment.object_name}</b>
+                    <ArrowRight size={13} />
+                    {String(assignment.value)}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {parseResult && parseResult.warnings.length > 0 && (
+              <motion.div
+                className={`nlu-alert ${parseResult.can_apply ? 'warn' : 'error'}`}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+              >
+                <ShieldAlert size={18} />
+                <div>
+                  {parseResult.warnings.map((warning, index) => (
+                    <div key={index}>{warning}</div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {parseResult?.needs_confirmation && (
+              <div className="nlu-alert confirm">
+                <ShieldAlert size={18} />
+                <div>Команда затрагивает большое число записей. Применение требует подтверждения.</div>
+              </div>
+            )}
+
+            {parsed.missing_objects && parsed.missing_objects.length > 0 && (
+              <div className="nlu-alert error">
+                <ShieldAlert size={18} />
+                <div>
+                  <strong>Объекты не найдены в данных:</strong> {parsed.missing_objects.join(', ')}.
+                  Команда не может быть применена.
+                </div>
+              </div>
+            )}
+
+            {parsed.intent === 'copy_items' && parseResult && parseResult.preview_changes.length > 0 && (
+              <div className="nlu-preview">
+                <div className="nlu-preview-head">
+                  <h4>Создаваемые копии</h4>
+                  <span className="nlu-preview-count">{parseResult.preview_changes.length}</span>
+                </div>
+                {parsed.source_object && (
+                  <div className="nlu-source-card glass-soft">
+                    <Copy size={18} />
+                    <div>
+                      <span className="nlu-source-label">Источник данных</span>
+                      <strong>{parseResult.preview_changes[0]?.source || parsed.source_object}</strong>
+                    </div>
+                  </div>
+                )}
+                <div className="nlu-copy-grid">
+                  {parseResult.preview_changes.map((change, index) => (
+                    <motion.div
+                      key={index}
+                      className="nlu-copy-card glass-soft"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(index * 0.05, 0.5) }}
+                    >
+                      <Plus size={15} />
+                      <span>{change.record}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {parsed.intent !== 'copy_items' && parseResult && parseResult.preview_changes.length > 0 && (
+              <div className="nlu-preview">
+                <div className="nlu-preview-head">
+                  <h4>Предварительный просмотр изменений</h4>
+                  <span className="nlu-preview-count">{parseResult.preview_changes.length}</span>
+                </div>
+                <div className="table-shell">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Запись</th>
+                        <th>Группа</th>
+                        <th>Параметр</th>
+                        <th>Текущее</th>
+                        <th></th>
+                        <th>Новое</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {parseResult.preview_changes.map((change, index) => (
+                        <motion.tr
+                          key={index}
+                          className="nlu-preview-row"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: Math.min(index * 0.05, 0.6) }}
+                        >
+                          <td>{change.record}</td>
+                          <td className="nlu-group-cell">{change.group || '—'}</td>
+                          <td>{change.parameter ? (PARAM_LABELS[change.parameter] || change.parameter) : 'новая позиция'}</td>
+                          <td>{change.old_value === null ? '—' : formatValue(change.old_value)}</td>
+                          <td className="nlu-arrow"><ArrowRight size={15} /></td>
+                          <td className="nlu-new-value">{change.new_value === null ? '—' : formatValue(change.new_value)}</td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            <div className="nlu-apply-row">
+              <button
+                className="button primary nlu-apply-btn"
+                onClick={applyChanges}
+                disabled={!parseResult?.can_apply || applying}
+              >
+                {applying ? <LoaderCircle size={16} className="spin" /> : <CircleCheckBig size={16} />}
+                {parseResult?.needs_confirmation ? 'Подтвердить и применить' : 'Применить изменения'}
+              </button>
+              {!parseResult?.can_apply && (
+                <span className="ai-hint-text">Применение недоступно: уточните команду.</span>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {applyResult?.success && (
+          <motion.div
+            className="nlu-card glass nlu-success-card"
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 20 }}
+          >
+            <div className="nlu-success-icon">
+              <CircleCheckBig size={28} />
+            </div>
+            <div>
+              <strong>Изменения применены</strong>
+              <p>{applyResult.message}</p>
+              <span className="nlu-success-sub">Обновлено записей: {applyResult.changes.length}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        className="nlu-card glass"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.1 }}
+      >
+        <div className="nlu-card-head">
+          <TableProperties size={18} />
+          <h3>Текущие данные проекта · {adapter.title.replace('ИИ-редактор: ', '')}</h3>
+          <button className="button subtle nlu-reset-btn" onClick={resetRecords}>
+            <RotateCcw size={15} /> Сбросить распознавание
+          </button>
+        </div>
+        <div className="table-shell">
+          <table>
+            <thead>
+              <tr>
+                <th>Запись</th>
+                <th>Группа</th>
+                {adapter.displayFields.map((field) => (
+                  <th key={field.key}>{field.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((record, index) => (
+                <tr key={`${record.name}-${index}`} className="nlu-data-row">
+                  <td>{record.name}</td>
+                  <td>{record.group === '__scalars__' ? '—' : record.group}</td>
+                  {adapter.displayFields.map((field) => (
+                    <td key={field.key}>
+                      {record[field.key] === undefined || record[field.key] === null
+                        ? '—'
+                        : formatValue(record[field.key])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function Chip({ label, value, index }: { label: string; value: string; index: number }) {
+  return (
+    <motion.span
+      className="nlu-chip"
+      initial={{ opacity: 0, scale: 0.9, y: 6 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ delay: index * 0.06, type: 'spring', stiffness: 260, damping: 20 }}
+    >
+      <span className="nlu-chip-key">{label}</span>
+      <span className="nlu-chip-val">{value}</span>
+    </motion.span>
+  );
+}
+
+function AiPage({ showToast }: { showToast: (type: 'success' | 'error', message: string) => void }) {
+  const [modelInfo, setModelInfo] = useState<AiModelInfo | null>(null);
+  const [prediction, setPrediction] = useState<AiPredictResult | null>(null);
+  const [training, setTraining] = useState(false);
+  const [predicting, setPredicting] = useState(false);
+  const [params, setParams] = useState<EquipmentParams>({
+    type_class: 'M',
+    air_temperature: 300,
+    process_temperature: 310,
+    rotational_speed: 1500,
+    torque: 40,
+    tool_wear: 108,
+  });
+
+  useEffect(() => {
+    fetchModelInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function fetchModelInfo() {
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/model-info`);
+      if (!response.ok) return;
+      const data = await response.json();
+      setModelInfo(data);
+    } catch {
+      // backend может быть не запущен
+    }
+  }
+
+  async function trainModel() {
+    setTraining(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/train`, { method: 'POST' });
+      if (!response.ok) {
+        const error = await safeJson(response);
+        throw new Error(error?.detail || 'Не удалось обучить модель');
+      }
+      await fetchModelInfo();
+      showToast('success', 'Модель обучена на датасете AI4I 2020.');
+    } catch (error: any) {
+      showToast('error', error.message || 'Ошибка обучения модели.');
+    } finally {
+      setTraining(false);
+    }
+  }
+
+  async function runPredict() {
+    setPredicting(true);
+    setPrediction(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/ai/predict`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      });
+      if (!response.ok) {
+        const error = await safeJson(response);
+        throw new Error(error?.detail || 'Не удалось выполнить прогноз');
+      }
+      const data: AiPredictResult = await response.json();
+      setPrediction(data);
+      if (data.can_predict) {
+        showToast('success', 'Прогноз вероятности отказа выполнен.');
+      } else {
+        showToast('error', 'Введённые значения вне области применимости модели.');
+      }
+    } catch (error: any) {
+      showToast('error', error.message || 'Ошибка прогноза.');
+    } finally {
+      setPredicting(false);
+    }
+  }
+
+  const isReady = modelInfo?.status === 'ready';
+  const labels = modelInfo?.feature_labels || {};
+  const modelLabels = modelInfo?.model_labels || {};
+
+  const importanceData = Object.entries(modelInfo?.feature_importance || {}).map(
+    ([feature, value]) => ({
+      name: labels[feature] || feature,
+      value: Number((Number(value) * 100).toFixed(2)),
+    }),
+  );
+
+  return (
+    <div className="stack-16">
+      <SectionCard title="О ИИ-модуле" icon={<BrainCircuit size={18} />}>
+        <p className="ai-module-lead">
+          Модуль реализует методы машинного обучения для задачи предиктивного обслуживания
+          оборудования (predictive maintenance). Обучение проводится на открытом датасете
+          <strong> AI4I 2020 Predictive Maintenance Dataset </strong>
+          из репозитория UCI ML. Сравниваются две модели — случайный лес и нейронная сеть, —
+          а лучшая по F1-мере используется для прогноза.
+        </p>
+
+        <div className="ai-train-row">
+          <button className="button primary" onClick={trainModel} disabled={training}>
+            {training ? <LoaderCircle size={16} className="spin" /> : <Sparkles size={16} />}
+            {training ? 'Идёт обучение модели...' : isReady ? 'Переобучить модель' : 'Обучить модель'}
+          </button>
+
+          <div className={`ai-status-chip ${isReady ? 'ready' : 'pending'}`}>
+            {isReady ? (
+              <>
+                <CircleCheckBig size={16} /> Модель обучена
+              </>
+            ) : (
+              <>
+                <ShieldAlert size={16} /> Модель ещё не обучена
+              </>
+            )}
+          </div>
+        </div>
+
+        {isReady && (
+          <div className="passport-grid compact" style={{ marginTop: 16 }}>
+            <Metric label="Датасет, наблюдений" value={modelInfo?.dataset_rows} />
+            <Metric label="Доля отказов в данных, %" value={Number(((modelInfo?.failure_rate || 0) * 100).toFixed(2))} />
+            <Metric label="Лучшая модель" value={modelInfo?.best_model_label} />
+            <Metric label="Обучена" value={modelInfo?.trained_at ? new Date(modelInfo.trained_at).toLocaleString('ru-RU') : '—'} />
+          </div>
+        )}
+      </SectionCard>
+
+      {isReady && modelInfo?.metrics_by_model && (
+        <SectionCard title="Метрики обученных моделей" icon={<ChartNoAxesCombined size={18} />}>
+          <div className="ai-metrics-grid">
+            {Object.entries(modelInfo.metrics_by_model).map(([name, metrics]) => (
+              <div
+                key={name}
+                className={`ai-model-card glass-soft ${name === modelInfo.best_model ? 'best' : ''}`}
+              >
+                <div className="ai-model-card-head">
+                  <strong>{modelLabels[name] || name}</strong>
+                  {name === modelInfo.best_model && <span className="ai-best-badge">Выбрана</span>}
+                </div>
+                <div className="passport-grid compact">
+                  <Metric label="Accuracy" value={metrics.accuracy} />
+                  <Metric label="F1-мера" value={metrics.f1} />
+                  <Metric label="Precision" value={metrics.precision} />
+                  <Metric label="Recall" value={metrics.recall} />
+                  <Metric label="ROC-AUC" value={metrics.roc_auc} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <ChartCard title="Важность признаков (Random Forest), %">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={importanceData}
+                layout="vertical"
+                margin={{ top: 8, right: 28, left: 60, bottom: 8 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" tick={{ fontSize: 13 }} />
+                <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 12 }} />
+                <Tooltip formatter={(value: any) => `${value}%`} />
+                <Bar dataKey="value" name="Вклад в прогноз, %" fill="#ff7757" radius={[0, 10, 10, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </SectionCard>
+      )}
+
+      <SectionCard title="Параметры оборудования" icon={<Cpu size={18} />}>
+        <div className="form-grid two">
+          <Field label="Класс изделия (L / M / H)">
+            <select
+              value={params.type_class}
+              onChange={(e) => setParams((prev) => ({ ...prev, type_class: e.target.value }))}
+            >
+              <option value="L">L — низкое качество</option>
+              <option value="M">M — среднее качество</option>
+              <option value="H">H — высокое качество</option>
+            </select>
+          </Field>
+
+          <Field label="Температура воздуха, K">
+            <DecimalInput value={params.air_temperature} onChange={(value) => setParams((prev) => ({ ...prev, air_temperature: value }))} />
+          </Field>
+
+          <Field label="Температура процесса, K">
+            <DecimalInput value={params.process_temperature} onChange={(value) => setParams((prev) => ({ ...prev, process_temperature: value }))} />
+          </Field>
+
+          <Field label="Скорость вращения, об/мин">
+            <DecimalInput value={params.rotational_speed} onChange={(value) => setParams((prev) => ({ ...prev, rotational_speed: value }))} />
+          </Field>
+
+          <Field label="Крутящий момент, Н·м">
+            <DecimalInput value={params.torque} onChange={(value) => setParams((prev) => ({ ...prev, torque: value }))} />
+          </Field>
+
+          <Field label="Износ инструмента, мин">
+            <DecimalInput value={params.tool_wear} onChange={(value) => setParams((prev) => ({ ...prev, tool_wear: value }))} />
+          </Field>
+        </div>
+
+        <div className="ai-train-row" style={{ marginTop: 16 }}>
+          <button className="button primary" onClick={runPredict} disabled={predicting || !isReady}>
+            {predicting ? <LoaderCircle size={16} className="spin" /> : <BrainCircuit size={16} />}
+            {predicting ? 'Прогнозирование...' : 'Спрогнозировать отказ'}
+          </button>
+          {!isReady && <span className="ai-hint-text">Сначала обучите модель выше.</span>}
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Результат прогноза" icon={<ChartNoAxesCombined size={18} />}>
+        {!prediction && (
+          <div className="empty-result">
+            Заполните параметры оборудования и запустите прогноз, чтобы увидеть вероятность отказа.
+          </div>
+        )}
+
+        {prediction && !prediction.can_predict && (
+          <div className="result-stack">
+            <div className="ai-ood-alert">
+              <ShieldAlert size={24} />
+              <div>
+                <strong>Значения выходят за область обучающей выборки, ML-прогноз недостоверен</strong>
+                <p>{prediction.interpretation}</p>
+              </div>
+            </div>
+
+            <div className="ai-warnings-list">
+              {prediction.validation_warnings.map((warning, index) => (
+                <div className="ai-warning-item" key={index}>
+                  <div className="ai-warning-head">
+                    <span className="ai-warning-param">{warning.label}</span>
+                    <span className="ai-warning-type">
+                      {warning.type === 'physical' || warning.type === 'invalid'
+                        ? 'физически некорректно'
+                        : 'вне обучающей выборки'}
+                    </span>
+                  </div>
+                  <div className="ai-warning-body">
+                    <span className="ai-warning-value">Введено: {formatValue(warning.value)}</span>
+                    {warning.training_range && (
+                      <span className="ai-warning-range">
+                        Диапазон данных: {formatValue(warning.training_range.min)}–{formatValue(warning.training_range.max)}
+                      </span>
+                    )}
+                    {warning.physical_range && (
+                      <span className="ai-warning-range">
+                        Допустимо: {warning.physical_range.min ?? '−∞'}…{warning.physical_range.max ?? '+∞'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="ai-warning-msg">{warning.message}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {prediction && prediction.can_predict && (
+          <div className="result-stack">
+            <div className="ai-probability-banner glass-soft">
+              <div className="ai-probability-value" style={{ color: riskLevelColor(prediction.failure_probability ?? 0) }}>
+                {formatValue(prediction.risk_percent)}%
+              </div>
+              <div className="ai-probability-meta">
+                <span
+                  className="ai-risk-badge"
+                  style={{ background: riskLevelColor(prediction.failure_probability ?? 0) }}
+                >
+                  {prediction.risk_level}
+                </span>
+                <span className="ai-risk-sub">
+                  Прогноз: {prediction.failure_prediction === 1 ? 'ожидается отказ' : 'отказ не ожидается'} · модель «{prediction.model_label}»
+                </span>
+              </div>
+            </div>
+
+            <div className="passport-grid compact">
+              <Metric label="Вероятность отказа, %" value={prediction.risk_percent} />
+              <Metric label="Бинарный прогноз" value={prediction.failure_prediction === 1 ? 'Отказ (1)' : 'Норма (0)'} />
+              <Metric label="Риск для модуля рисков, %" value={prediction.recommended_risk_value} />
+            </div>
+
+            <Interpretation text={prediction.interpretation} />
+
+            <div className="ai-integration-note glass-soft">
+              <ShieldCheck size={18} />
+              <div>
+                <strong>Связь с модулем анализа рисков</strong>
+                <p>
+                  Полученное значение <b>{formatValue(prediction.recommended_risk_value)}%</b> можно
+                  использовать как уровень риска события «Простой / отказ оборудования» в модуле
+                  «Анализ рисков» — это переводит экспертную оценку риска в оценку на основе машинного обучения.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </SectionCard>
+    </div>
+  );
 }
 
 
