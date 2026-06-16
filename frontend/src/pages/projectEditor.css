@@ -1,0 +1,241 @@
+/* Редактор проекта — использует общие токены темы (--text, --line, --panel…),
+   поэтому светлая/тёмная темы поддерживаются автоматически. */
+
+.pe-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* --- Шапка --- */
+.pe-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  justify-content: space-between;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+}
+
+.pe-header-main { flex: 1 1 420px; min-width: 0; }
+
+.pe-header-top { display: flex; gap: 16px; align-items: flex-start; }
+
+.pe-project-icon {
+  display: grid;
+  place-items: center;
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--orange), var(--pink));
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.pe-meta-view h2 { margin: 0 0 4px; font-size: 22px; }
+.pe-meta-view p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+
+.pe-edit-meta-btn { padding: 6px 12px; font-size: 13px; }
+
+.pe-meta-edit { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.pe-meta-actions { display: flex; gap: 10px; }
+
+.pe-input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.pe-input:focus {
+  outline: none;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(255, 119, 87, 0.18);
+}
+.pe-input-title { font-size: 18px; font-weight: 700; }
+.pe-textarea { resize: vertical; }
+
+.pe-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.pe-meta-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+.pe-meta-cell span { font-size: 12px; color: var(--muted-2); }
+.pe-meta-cell strong { font-size: 15px; }
+.pe-meta-cell svg { color: var(--muted); }
+
+.pe-module-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 0 0 260px;
+}
+.pe-count-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.pe-count-chip.empty { opacity: 0.6; }
+.pe-count-chip.filled svg { color: var(--success); }
+.pe-count-chip strong { font-size: 18px; display: block; line-height: 1; }
+.pe-count-chip span { font-size: 12px; color: var(--muted); }
+
+/* --- Вкладки --- */
+.pe-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.pe-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+.pe-tab:hover { color: var(--text); border-color: var(--line-strong); }
+.pe-tab.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--orange), var(--pink));
+  border-color: transparent;
+}
+.pe-tab-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px; height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.12);
+  font-size: 11px;
+}
+.pe-tab.active .pe-tab-badge { background: rgba(255, 255, 255, 0.28); }
+
+/* --- Тулбар --- */
+.pe-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+}
+.pe-toolbar-left { display: flex; gap: 8px; }
+
+/* --- Панель раздела --- */
+.pe-panel { padding: 20px; border-radius: var(--radius-lg); }
+
+.pe-editor { display: flex; flex-direction: column; gap: 18px; }
+
+.pe-scalars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.pe-scalar { display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: var(--muted); }
+
+.pe-table-shell { overflow-x: auto; }
+.pe-table { width: 100%; border-collapse: collapse; }
+.pe-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-2);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.pe-table td { padding: 6px 8px; vertical-align: middle; }
+.pe-table tbody tr { border-bottom: 1px solid var(--line); }
+.pe-table .pe-input { min-width: 90px; padding: 7px 10px; }
+
+.pe-row-actions { width: 1%; }
+.pe-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pe-icon-btn:hover { color: var(--text); border-color: var(--line-strong); }
+.pe-icon-btn.danger:hover { color: var(--error); border-color: var(--error); }
+
+.pe-add-btn { align-self: flex-start; }
+
+/* --- Подсекции (риски) --- */
+.pe-subsection { display: flex; flex-direction: column; gap: 12px; }
+.pe-subsection-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.pe-subsection-head h4 { margin: 0; font-size: 15px; }
+
+.pe-events { display: flex; flex-wrap: wrap; gap: 10px; }
+.pe-event-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.pe-event-chip .pe-input { min-width: 160px; }
+
+/* --- Пустое состояние --- */
+.pe-empty {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px;
+  border-radius: var(--radius-md);
+  color: var(--muted);
+  border: 1px dashed var(--line-strong);
+}
+.pe-empty strong { color: var(--text); display: block; }
+.pe-empty p { margin: 2px 0 0; font-size: 13px; }
+
+/* --- Блок ИИ-редактора --- */
+.pe-ai { display: flex; flex-direction: column; gap: 8px; }
+.pe-ai-head { display: flex; flex-direction: column; gap: 2px; padding: 0 4px; }
+.pe-ai-kicker { font-weight: 700; font-size: 14px; }
+.pe-ai-hint { font-size: 12.5px; color: var(--muted); }
+
+/* --- Адаптив --- */
+@media (max-width: 860px) {
+  .pe-header { flex-direction: column; }
+  .pe-module-counts { flex-basis: auto; }
+  .pe-meta-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .pe-header { padding: 18px; }
+  .pe-meta-grid { grid-template-columns: 1fr; }
+  .pe-toolbar { flex-direction: column; align-items: stretch; }
+  .pe-toolbar .button { justify-content: center; }
+}

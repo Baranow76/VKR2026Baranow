@@ -1,0 +1,197 @@
+/* Профиль пользователя — использует общие токены темы (авто-поддержка тёмной). */
+
+.pf-shell { display: flex; flex-direction: column; gap: 18px; }
+
+/* --- Шапка --- */
+.pf-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+}
+.pf-avatar {
+  display: grid;
+  place-items: center;
+  width: 74px; height: 74px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, var(--orange), var(--pink));
+  color: #fff;
+  font-size: 26px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.pf-hero-main { flex: 1 1 280px; min-width: 0; }
+.pf-hero-name { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pf-hero-name h2 { margin: 0; font-size: 24px; }
+.pf-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+}
+.pf-badge.ok { background: rgba(15, 159, 104, 0.16); color: var(--success); }
+.pf-badge.warn { background: rgba(196, 77, 44, 0.16); color: var(--error); }
+.pf-hero-meta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; color: var(--muted); font-size: 13.5px; }
+.pf-hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* --- Карточки --- */
+.pf-card { padding: 20px; border-radius: var(--radius-lg); }
+.pf-card-title { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; font-size: 16px; }
+.pf-card-title.danger { color: var(--error); }
+
+.pf-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.pf-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.pf-input {
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.pf-input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255, 119, 87, 0.18); }
+.pf-input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* --- Статистика --- */
+.pf-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px;
+}
+.pf-stat { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: var(--radius-md); }
+.pf-stat-icon {
+  display: grid; place-items: center; width: 42px; height: 42px;
+  border-radius: 12px; background: var(--panel); color: var(--orange); flex-shrink: 0;
+}
+.pf-stat-value { font-size: 24px; font-weight: 800; line-height: 1.1; }
+.pf-stat-value.small { font-size: 15px; font-weight: 700; }
+.pf-stat-label { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+/* --- Запуски по модулям --- */
+.pf-module-runs { display: flex; flex-wrap: wrap; gap: 12px; }
+.pf-run-chip {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 92px; padding: 12px 16px; border-radius: 14px;
+  background: var(--panel); border: 1px solid var(--line);
+}
+.pf-run-chip strong { font-size: 22px; }
+.pf-run-chip span { font-size: 12px; color: var(--muted); }
+
+/* --- Быстрые переходы --- */
+.pf-quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.pf-quick-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; padding: 14px 16px; border-radius: 14px; cursor: pointer;
+  background: var(--panel); border: 1px solid var(--line); color: var(--text);
+  text-align: left; transition: all 0.16s;
+}
+.pf-quick-row:hover { border-color: var(--orange); transform: translateY(-2px); }
+.pf-quick-row strong { display: block; font-size: 14px; }
+.pf-quick-row span { font-size: 12px; color: var(--muted); }
+
+.pf-mini-list { display: flex; flex-direction: column; gap: 8px; }
+.pf-mini-row {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 9px 12px; border-radius: 10px; background: var(--panel); font-size: 13px;
+}
+.pf-mini-row em { color: var(--muted-2); font-style: normal; font-size: 12px; }
+
+.pf-empty { padding: 16px; text-align: center; color: var(--muted-2); font-size: 13px; }
+
+/* --- Настройки --- */
+.pf-setting-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 12px 0; border-top: 1px solid var(--line);
+}
+.pf-setting-row:first-of-type { border-top: none; }
+.pf-setting-row strong { display: block; font-size: 14px; }
+.pf-setting-row span { font-size: 12.5px; color: var(--muted); }
+.pf-pill { padding: 6px 12px; border-radius: 999px; background: var(--panel); font-size: 13px; color: var(--muted); }
+
+/* --- Сессии --- */
+.pf-session-summary { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.pf-session-summary strong { display: block; }
+.pf-session-summary span { font-size: 12.5px; color: var(--muted); }
+.pf-session-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.pf-session-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px; background: var(--panel); font-size: 13px;
+}
+.pf-session-row em { color: var(--muted-2); font-style: normal; font-size: 12px; margin-left: auto; }
+.pf-security-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* --- Опасная зона --- */
+.pf-danger { border: 1px solid rgba(196, 77, 44, 0.32); }
+.pf-danger-text { color: var(--muted); font-size: 13.5px; margin: 0 0 14px; }
+.button.danger-btn {
+  background: var(--error); color: #fff; border: none;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: 600;
+}
+.button.danger-btn:hover { filter: brightness(1.08); }
+.button.danger-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* --- Модал --- */
+.pf-modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(4px);
+  display: grid; place-items: center; padding: 20px;
+}
+.pf-modal {
+  position: relative; max-width: 440px; width: 100%;
+  padding: 28px; border-radius: var(--radius-lg); text-align: center;
+}
+.pf-modal-close {
+  position: absolute; top: 14px; right: 14px; background: none; border: none;
+  color: var(--muted); cursor: pointer;
+}
+.pf-modal-icon {
+  display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 14px;
+  border-radius: 50%; background: rgba(196, 77, 44, 0.16); color: var(--error);
+}
+.pf-modal h3 { margin: 0 0 8px; }
+.pf-modal p { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; }
+.pf-modal .pf-input { width: 100%; margin-bottom: 16px; }
+.pf-modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* --- Heatmap --- */
+.pf-heatmap-wrap { overflow-x: auto; padding-bottom: 6px; }
+.pf-heatmap { display: inline-flex; flex-direction: column; gap: 6px; min-width: max-content; }
+.pf-heatmap-months {
+  display: grid;
+  grid-template-columns: repeat(53, 14px);
+  gap: 3px;
+  font-size: 10px;
+  color: var(--muted-2);
+  height: 12px;
+}
+.pf-heatmap-months span { grid-row: 1; }
+.pf-heatmap-grid { display: flex; gap: 3px; }
+.pf-heatmap-col { display: flex; flex-direction: column; gap: 3px; }
+.pf-cell { width: 11px; height: 11px; border-radius: 3px; background: var(--line); display: inline-block; }
+.pf-cell.future { opacity: 0.25; }
+.pf-cell.l0 { background: var(--line); }
+.pf-cell.l1 { background: rgba(255, 119, 87, 0.32); }
+.pf-cell.l2 { background: rgba(255, 119, 87, 0.55); }
+.pf-cell.l3 { background: rgba(255, 119, 87, 0.78); }
+.pf-cell.l4 { background: var(--orange); }
+
+.pf-activity-legend {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  margin-top: 12px; font-size: 12px; color: var(--muted); flex-wrap: wrap;
+}
+.pf-legend-scale { display: inline-flex; align-items: center; gap: 4px; }
+.pf-legend-scale .pf-cell { margin: 0 1px; }
+
+/* --- Адаптив --- */
+@media (max-width: 620px) {
+  .pf-hero { flex-direction: column; align-items: flex-start; text-align: left; }
+  .pf-stat-value { font-size: 20px; }
+}

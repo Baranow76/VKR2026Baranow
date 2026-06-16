@@ -240,12 +240,61 @@ textarea.json-box.tall {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: rgba(255, 255, 255, 0.32);
-  backdrop-filter: blur(10px);
+  /* Во время анимации — ТОЛЬКО однородный полупрозрачный dim-слой, без
+     backdrop-filter. Анимация blur'а поверх движущихся/композитящихся слоёв
+     и была источником «грязных» следов. Blur включается лишь в settled-состоянии. */
+  background: rgba(244, 244, 247, 0.6);
+  /* Собственный чистый слой композитинга. */
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: opacity;
+  contain: paint;
+}
+
+/* Лёгкий стабильный blur добавляется только когда меню полностью открыто и
+   ничего не анимируется (класс .sidebar-settled ставится по завершении входа,
+   снимается в момент начала закрытия). */
+.shell.sidebar-settled .sidebar-backdrop {
+  background: rgba(244, 244, 247, 0.5);
+  backdrop-filter: blur(7px) saturate(120%);
+  -webkit-backdrop-filter: blur(7px) saturate(120%);
 }
 
 :root[data-theme="dark"] .sidebar-backdrop {
-  background: rgba(0, 0, 0, 0.38);
+  background: rgba(6, 6, 10, 0.6);
+}
+
+:root[data-theme="dark"] .shell.sidebar-settled .sidebar-backdrop {
+  background: rgba(6, 6, 10, 0.52);
+}
+
+/* Плавное появление/уход dim-слоя (на случай мгновенного маунта без анимации). */
+.ambient {
+  transition: opacity 0.25s ease;
+}
+
+/* --- Состояние «sidebar открыт» ---
+   Привязываемся к фактическому присутствию backdrop через :has() — тогда
+   подавление держится и во время exit-анимации закрытия (backdrop ещё в DOM),
+   а не пропадает в момент клика. Класс .sidebar-open оставлен как fallback
+   для браузеров без :has(). */
+
+/* 1. Гасим декоративные ambient-блобы: они fixed + filter:blur + transform и
+      дают артефакты при сэмплировании их backdrop-фильтром затемнения. */
+.shell.sidebar-open .ambient,
+.shell:has(.sidebar-backdrop) .ambient {
+  opacity: 0;
+}
+
+/* 2. Контент под затемнением всё равно скрыт — отключаем его собственный
+      backdrop-filter, чтобы убрать двойную фильтрацию (источник «полос» и
+      «призрачных прямоугольников»). Сам sidebar (z-index выше) не затрагивается. */
+.shell.sidebar-open .main-area .glass,
+.shell.sidebar-open .main-area .glass-soft,
+.shell:has(.sidebar-backdrop) .main-area .glass,
+.shell:has(.sidebar-backdrop) .main-area .glass-soft {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .sidebar {
@@ -266,6 +315,10 @@ textarea.json-box.tall {
   border-radius: 34px !important;
   overflow: hidden !important;
   isolation: isolate;
+  /* Стабильный собственный слой для анимации transform+opacity. */
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  contain: paint;
 }
 
 .liquid-sidebar::before {
